@@ -8,23 +8,29 @@
 #   conflit     sources divergentes — arbitrage documenté, à vérifier
 #   manquant    non trouvé, à compléter
 #
-# Aucune valeur n'a été vérifiée contre le texte légal lui-même. Les références
-# d'articles ci-dessous proviennent des sources secondaires et doivent être
-# recoupées au Légifrance avant usage en production.
+# Vérification du 2026-09-07 : les paramètres d'impôt sur le revenu et de
+# prélèvements sociaux (décote, abattements, seuils et lissage de CSG) ont été
+# recoupés contre les sources officielles (BOFiP, Assurance retraite). Restent
+# à confirmer contre les décrets : les tables d'âge légal et de durée
+# d'assurance par génération, qui vivent dans parametres/baselines_retraites.yaml.
 # =============================================================================
 
 meta:
-  version: "0.1.0"
-  date: "2026-08-19"
+  version: "0.2.0"
+  date: "2026-09-07"
   annee_imposition: 2026
   annee_revenus: 2025
   annee_prelevements_sociaux: 2026
   champ_geographique: "France métropolitaine"
   note_outre_mer: >
-    MANQUANT. Les seuils de CSG outre-mer suivent une grille distincte, non
-    collectée. Le simulateur doit refuser de traiter les DROM tant qu'elle
-    n'est pas renseignée, plutôt que d'appliquer silencieusement la grille
-    métropolitaine.
+    Une grille outre-mer 2026 a été renseignée le 2026-09-07 dans
+    prelevements_sociaux.seuils_rfr.outre_mer (deux zones : Martinique /
+    Guadeloupe / Réunion / Saint-Barthélemy / Saint-Martin d'une part,
+    Guyane d'autre part). Confiance "a_verifier" : source secondaire unique
+    (aesio.fr), à recouper avec service-public.fr ou impots.gouv.fr. Mayotte
+    n'est pas couverte. Tant que la confiance reste sous "confirme", le
+    simulateur doit continuer de refuser les DROM plutôt que d'appliquer ces
+    valeurs silencieusement.
 
 # =============================================================================
 # 1. IMPÔT SUR LE REVENU
@@ -44,18 +50,21 @@ impot_revenu:
       - { plafond: null,   taux: 0.45 }
 
   decote:
-    reference: "Art. 197-I-4 CGI"
-    confiance: "conflit"
+    reference: "Art. 197-I-4 CGI ; BOFiP BOI-IR-LIQ-20-20-30"
+    confiance: "confirme"
     taux: 0.4525
     montant_celibataire: 897
     montant_couple: 1483
     seuil_application_celibataire: 1982   # IR brut au-delà duquel décote nulle
     seuil_application_couple: 3277
-    note_conflit: >
-      Une source donne 889 € / 1 470 € avec un seuil couple à 3 248 €. Ces
-      valeurs correspondent au barème 2025 (revenus 2024) : la source semble
-      ne pas avoir été actualisée. Les valeurs retenues (897 / 1 483) figurent
-      dans trois sources rattachées explicitement à la LF 2026. À confirmer.
+    note_verification: >
+      Vérifié le 2026-09-07 contre le BOFiP (bofip.impots.gouv.fr, page
+      BOI-IR-LIQ-20-20-30, actualité liée du 07/04/2026) : décote de 897 €
+      (célibataire) et 1 483 € (couple), seuils d'application 1 982 € et
+      3 277 €, taux 45,25 %. Valeurs à jour pour l'imposition des revenus 2025
+      (LF 2026, loi n°2026-103 du 19/02/2026). L'autre source vue en conflit
+      (889 € / 1 470 €, seuil couple 3 248 €) était le barème 2025 non
+      actualisé.
 
   quotient_familial:
     plafond_par_demi_part: 1807
@@ -88,12 +97,14 @@ impot_revenu:
     taux: 0.10
     minimum: 509
     maximum: 14555
-    confiance: "conflit"
-    note_conflit: >
-      Deux sources donnent 14 555 €, une donne 14 556 €. Écart d'un euro,
-      probable arrondi. Sans effet sensible ; à trancher au Légifrance.
-      Pertinent uniquement pour les foyers mêlant pension et salaire
-      (cumul emploi-retraite : 606 000 personnes en 2023).
+    confiance: "confirme"
+    note_verification: >
+      Vérifié le 2026-09-07 : abattement de 10 % plafonné à 14 555 € (et non
+      14 556 €), minimum 509 €, pour l'imposition des revenus 2025. Sources
+      concordantes citant impots.gouv.fr (toutsurmesfinances.com, weblex.fr).
+      La valeur 14 556 € vue ailleurs est un arrondi erroné. Pertinent
+      uniquement pour les foyers mêlant pension et salaire (cumul
+      emploi-retraite : 606 000 personnes en 2023).
 
   exclusions_abattement:
     confiance: "confirme"
@@ -155,13 +166,12 @@ prelevements_sociaux:
     unite: "euros de RFR"
     annee_rfr: 2024
     zone: "metropole"
-    confiance: "arbitre"
+    confiance: "confirme"
     note_structure: >
       Les seuils sont définis pour une part fiscale, majorés d'un supplément
       par demi-part additionnelle. Ce supplément DIFFÈRE selon la tranche —
-      ce n'est pas un pas unique. Les valeurs déduites des seuils publiés pour
-      1 et 2 parts donnent environ 3 484 € par demi-part pour l'exonération et
-      4 555 € pour la borne du taux réduit.
+      ce n'est pas un pas unique. Voir supplement_par_demi_part ci-dessous,
+      renseigné et vérifié le 2026-09-07.
     une_part:
       plafond_exoneration: 13048
       plafond_taux_reduit: 17057
@@ -169,36 +179,87 @@ prelevements_sociaux:
     deux_parts:
       plafond_exoneration: 20016
       plafond_taux_reduit: 26167
-      plafond_taux_median: 40604   # ARBITRÉ le 2026-08-19 (voir note)
-    note_arbitrage: >
-      ARBITRÉ à 40 604 € le 2026-08-19, sur décision explicite. Les sources
-      divergeaient : 39 886 € (deux sources) contre 40 604 € (une source).
-      SENS DU BIAIS : le seuil retenu étant le PLUS HAUT, davantage de foyers
-      restent au taux médian de 6,6 % au lieu de basculer au taux plein de
-      8,3 %. L'assiette du taux plein est donc réduite, ce qui MINORE le
-      retour de CSG dans la cascade et MAJORE l'économie nette affichée d'une
-      réforme. Hypothèse favorable au rendement des coupes.
-      Reste à confirmer sur la grille officielle Assurance retraite ou URSSAF.
+      plafond_taux_median: 40604
+    note_verification: >
+      Vérifié le 2026-09-07 contre la grille officielle publiée par
+      l'Assurance retraite (lassuranceretraite.fr, « Prélèvements sociaux en
+      2026 : augmentation des seuils », mise à jour du 09/01/2026). Grille
+      complète par nombre de parts (RFR 2024, métropole) :
+        1 part    : exonéré < 13 048 ; réduit 13 049–17 057 ;
+                    médian 17 058–26 471 ; normal >= 26 472
+        2 parts   : exonéré < 20 016 ; réduit 20 017–26 167 ;
+                    médian 26 168–40 603 ; normal >= 40 604
+        2,5 parts : exonéré < 23 500 ; réduit 23 501–30 722 ;
+                    médian 30 723–47 669 ; normal >= 47 670
+        3 parts   : exonéré < 26 984 ; réduit 26 985–35 277 ;
+                    médian 35 278–54 735 ; normal >= 54 736
+      Le débat antérieur (39 886 € contre 40 604 € pour la borne à 2 parts)
+      est tranché : 40 604 €. Le champ plafond_taux_median porte la valeur
+      d'entrée au taux normal ; la bande médiane s'arrête donc un euro plus
+      bas (40 603 pour 2 parts).
     supplement_par_demi_part:
-      confiance: "manquant"
+      confiance: "confirme"
+      pour_seuil_exoneration: 3484
+      pour_seuil_taux_reduit: 4555
+      pour_seuil_taux_median: 7066
+      note_verification: >
+        Vérifié le 2026-09-07, même source (Assurance retraite, grille 2026).
+        Chaque demi-part au-delà d'une part relève le seuil d'exonération de
+        3 484 €, la borne du taux réduit de 4 555 € et la borne du taux médian
+        (entrée au taux normal) de 7 066 €. Contrôle arithmétique : les seuils
+        publiés pour 2 parts se déduisent de ceux d'une part par +2 demi-parts
+        (13 048 + 6 968 = 20 016 ; 17 057 + 9 110 = 26 167 ;
+        26 472 + 14 132 = 40 604), et ceux de 3 parts par +4 demi-parts. NB :
+        la formulation « +3 484 (taux réduit) / +4 555 (taux médian) / +7 066
+        (taux normal) » vue dans certaines sources désigne les mêmes montants,
+        nommés par le taux auquel ils donnent accès.
+    outre_mer:
+      confiance: "a_verifier"
+      source: >
+        aesio.fr, grille CSG outre-mer 2026. Source secondaire unique, à
+        recouper avec service-public.fr ou impots.gouv.fr avant de passer en
+        "confirme".
+      convention: >
+        Valeurs = seuil d'ENTRÉE dans chaque taux (RFR à partir duquel le taux
+        s'applique), et non plafond de sortie comme pour la métropole.
       note: >
-        La grille complète au-delà de deux parts n'a pas été collectée. Peu
-        mordant pour les retraités seuls ou en couple sans personne à charge,
-        mais bloquant pour les foyers atypiques.
+        Le seuil du taux normal (8,3 %) est identique à la métropole dans les
+        deux zones (26 472 € pour 1 part, 40 604 € pour 2 parts) ; seuls les
+        seuils d'exonération et des taux réduit et médian sont relevés. Mayotte
+        n'est pas couverte par cette grille (cas à part, à vérifier séparément).
+      martinique_guadeloupe_reunion_saint_barthelemy_saint_martin:
+        une_part:
+          entree_taux_reduit: 15437
+          entree_taux_median: 18661
+          entree_taux_normal: 26472
+        deux_parts:
+          entree_taux_reduit: 22753
+          entree_taux_median: 28223
+          entree_taux_normal: 40604
+      guyane:
+        une_part:
+          entree_taux_reduit: 16141
+          entree_taux_median: 19546
+          entree_taux_normal: 26472
+        deux_parts:
+          entree_taux_reduit: 23631
+          entree_taux_median: 29338
+          entree_taux_normal: 40604
 
   lissage:
-    confiance: "conflit"
+    confiance: "confirme"
     regle_retenue: >
-      Le passage du taux réduit (3,8 %) au taux médian (6,6 %) suppose un
-      dépassement du seuil sur DEUX années consécutives.
-    note_conflit: >
-      Plusieurs sources généralisent la règle des deux ans à tous les
-      franchissements de palier. Une source syndicale affirme au contraire,
-      de façon circonstanciée et en militant pour son extension, que le
-      lissage NE s'applique PAS aux passages 0 % -> 3,8 % ni 6,6 % -> 8,3 %.
-      La précision de cette dernière et l'incohérence qu'il y aurait à
-      militer pour l'extension d'une règle déjà générale conduisent à retenir
-      la version restrictive. À vérifier à l'art. L.136-8 CSS.
+      La règle des deux années consécutives protège le seul passage vers le
+      taux médian (depuis le taux réduit) : pas de hausse tant que le
+      dépassement du seuil n'est pas confirmé sur deux ans. Les autres
+      franchissements sont immédiats — en particulier, AUCUN lissage entre le
+      taux médian (6,6 %) et le taux normal (8,3 %).
+    note_verification: >
+      Vérifié le 2026-09-07, même source que les seuils (Assurance retraite,
+      « Prélèvements sociaux en 2026 », MàJ 09/01/2026). La version restrictive
+      déjà retenue dans le fichier était la bonne. Les sources qui
+      généralisaient la règle des deux ans à tous les franchissements de
+      palier étaient inexactes.
     implication_simulateur: >
       Cette règle rend les taux de CSG dépendants de la trajectoire, pas
       seulement du niveau. Une baisse de pension ne fait pas immédiatement
@@ -341,5 +402,13 @@ manquants:
     note: "Relève des APUL — nécessaire pour la ventilation par sous-secteur."
   - id: "seuils_csg_outre_mer"
     criticite: "important"
+    statut: >
+      Grille 2026 renseignée le 2026-09-07 (prelevements_sociaux.seuils_rfr.
+      outre_mer), confiance "a_verifier" : reste à recouper avec une source
+      officielle. Mayotte toujours absente.
   - id: "grille_csg_au_dela_de_deux_parts"
     criticite: "secondaire"
+    statut: >
+      Résolu le 2026-09-07 : supplement_par_demi_part renseigné et vérifié
+      (3 484 / 4 555 / 7 066 € par demi-part). Grille explicite jusqu'à
+      3 parts dans note_verification.
