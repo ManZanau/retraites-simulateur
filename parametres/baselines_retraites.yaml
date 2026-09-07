@@ -1,0 +1,274 @@
+# =============================================================================
+# BASELINES LÉGISLATIFS — RÉGIME GÉNÉRAL
+# Simulateur de dépenses publiques / volet retraites
+# =============================================================================
+#
+# Trois scénarios de référence, à distinguer impérativement dans tout chiffrage.
+# Un chiffrage de réforme qui ne précise pas son baseline mélange l'effet de la
+# réforme testée avec l'effet du calendrier de suspension.
+#
+#   B0_reforme_2023   Droit issu de la réforme du 14 avril 2023, sans suspension.
+#                     Contrefactuel. Ne correspond à aucun droit applicable
+#                     aujourd'hui, mais sert de point de comparaison.
+#
+#   B1_suspension     Droit applicable aux pensions prenant effet du
+#                     2026-09-01 au 2028-01-01. C'est le droit en vigueur.
+#
+#   B2_post_2028      Hypothèse conventionnelle de reprise du calendrier après
+#                     la fin de la suspension. NON ÉCRIT DANS LA LOI : la LFSS
+#                     2026 fixe le terme de la suspension mais pas les modalités
+#                     de sortie. Paramètre de travail, à assumer comme tel.
+#
+# SOURCES
+#   Loi n° 2025-1403 du 30 décembre 2025 (LFSS 2026), art. 105
+#     -> nouvelle rédaction des art. L161-17-2 et L161-17-3 CSS
+#   Décrets n° 2026-344 et n° 2026-345 du 7 mai 2026
+#   Circulaire CNAV 2026-07 du 5 mars 2026
+#   Loi n° 2023-270 du 14 avril 2023 (réforme "Borne")
+#
+# NIVEAU DE CONFIANCE
+#   Les tables ci-dessous sont reconstituées à partir de sources secondaires
+#   concordantes (CNAV, CNRACL, CNBF, presse spécialisée), non à partir du texte
+#   réglementaire lui-même. À VÉRIFIER contre les décrets du 7 mai 2026 et la
+#   circulaire CNAV avant tout usage en production. Voir `statut_verification`.
+#
+# CONVENTIONS
+#   - Âges exprimés en mois révolus (62 ans 9 mois = 753).
+#   - Durées exprimées en trimestres.
+#   - Les générations à bornes infra-annuelles sont éclatées par trimestre
+#     de naissance (clés `1965T1`, `1965T2+`).
+#   - `defaut_au_dela` s'applique à toute génération postérieure à la dernière
+#     clé explicite.
+# =============================================================================
+
+meta:
+  version: "0.1.0"
+  date_creation: "2026-08-19"
+  perimetre: "regime_general"
+  statut_verification: "NON VERIFIE - sources secondaires uniquement"
+  regimes_non_couverts:
+    - fonction_publique_etat
+    - fonction_publique_territoriale_hospitaliere
+    - regimes_speciaux
+    - non_salaries
+  note_perimetre: >
+    Ce fichier ne couvre que le régime général. La fonction publique de
+    catégorie active suit une grille distincte (borne des 59 ans décalée de la
+    génération 1973 à la génération 1974 par la suspension). Les régimes
+    spéciaux et non-salariés ont leurs propres calendriers.
+
+# -----------------------------------------------------------------------------
+# Paramètres invariants — identiques dans les trois baselines
+# -----------------------------------------------------------------------------
+invariants:
+  age_taux_plein_automatique_mois: 804   # 67 ans, toutes générations
+  duree_assurance_cible_trimestres: 172  # plafond de la montée en charge
+  note_taux_plein: >
+    L'âge d'annulation de la décote est resté à 67 ans pour toutes les
+    générations, y compris après la réforme 2023 et après la suspension.
+    Attention : le taux plein automatique supprime la décote, pas la
+    proratisation. Une carrière incomplète reste proratisée à 67 ans.
+
+# =============================================================================
+# B0 — RÉFORME 2023 SANS SUSPENSION (contrefactuel)
+# =============================================================================
+B0_reforme_2023:
+
+  libelle: "Réforme du 14 avril 2023, calendrier initial"
+  applicable: false
+  note: >
+    Montée en charge de 3 mois par génération à partir des assurés nés à
+    compter du 1er septembre 1961, jusqu'à 64 ans pour la génération 1968.
+    Durée d'assurance portée à 172 trimestres dès la génération 1965.
+
+  age_legal_mois:
+    # Générations antérieures : droit issu de la loi Touraine de 2014,
+    # hors champ de modélisation fine. Valeur plancher, à ne pas utiliser
+    # pour un chiffrage sur ces générations.
+    defaut_en_deca: 744    # 62 ans
+    1961T4: 747    # 62 ans 3 mois — nés à compter du 01/09/1961
+    1962:   750    # 62 ans 6 mois
+    1963:   753    # 62 ans 9 mois
+    1964:   756    # 63 ans
+    1965:   759    # 63 ans 3 mois
+    1966:   762    # 63 ans 6 mois
+    1967:   765    # 63 ans 9 mois
+    1968:   768    # 64 ans
+    defaut_au_dela: 768
+
+  duree_assurance_trimestres:
+    defaut_en_deca: 168    # loi Touraine, hors champ de modélisation fine
+    1961T4: 169
+    1962:   169
+    1963:   170
+    1964:   171
+    1965:   172
+    defaut_au_dela: 172
+
+# =============================================================================
+# B1 — DROIT EN VIGUEUR (suspension LFSS 2026)
+# =============================================================================
+B1_suspension:
+
+  libelle: "Suspension LFSS 2026 — droit applicable"
+  applicable: true
+  date_effet: "2026-09-01"
+  date_fin: "2028-01-01"
+  note: >
+    Gel du calendrier pour les générations 1964 à 1968. Les générations 1964 et
+    T1 1965 restent à 62 ans 9 mois. La montée en charge reprend à compter des
+    assurés nés au 1er avril 1965, pour atteindre 64 ans à la génération 1969.
+    Les générations 1966 à 1968 gagnent 3 mois sur l'âge légal mais AUCUN
+    trimestre sur la durée d'assurance requise.
+
+  critere_application: >
+    La règle dépend de la date d'entrée en jouissance de la pension, pas de la
+    date de dépôt du dossier. Une pension prenant effet avant le 2026-09-01
+    relève de B0, même pour une génération concernée par la suspension.
+
+  age_legal_mois:
+    defaut_en_deca: 744    # 62 ans — loi Touraine, hors champ
+    1961T4: 747    # inchangé vs B0
+    1962:   750    # inchangé
+    1963:   753    # inchangé
+    1964:   753    # 62 ans 9 mois — gelé (B0 : 756)
+    1965T1: 753    # 62 ans 9 mois — gelé (B0 : 759)
+    1965T2+: 756   # 63 ans — reprise à compter du 01/04/1965
+    1966:   759    # 63 ans 3 mois (B0 : 762)
+    1967:   762    # 63 ans 6 mois (B0 : 765)
+    1968:   765    # 63 ans 9 mois (B0 : 768)
+    1969:   768    # 64 ans
+    defaut_au_dela: 768
+
+  duree_assurance_trimestres:
+    defaut_en_deca: 168    # loi Touraine, hors champ
+    1961T4: 169
+    1962:   169
+    1963:   170
+    1964:   170    # gelé (B0 : 171)
+    1965T1: 170    # gelé (B0 : 172)
+    1965T2+: 171   # (B0 : 172)
+    1966:   172    # aucun gain vs B0
+    defaut_au_dela: 172
+
+  carriere_longue:
+    statut: "INCOMPLET - à compléter"
+    perimetre_generations: [1964, 1970]
+    note: >
+      Grille distincte, couvrant deux générations de plus que le régime général.
+      Bornes réglementaires : art. D. 351-1-1 CSS — départ possible à 58 ans
+      (début avant 16 ans), 60 ans (avant 18 ans), 62 ans (avant 20 ans),
+      63 ans (avant 21 ans), sous réserve des dispositions transitoires.
+      Seuls deux points de la borne "avant 20 ans" sont documentés ici ;
+      la grille complète est à extraire du décret n° 2026-344.
+    borne_avant_20_ans_mois:
+      1964: 726    # 60 ans 6 mois — inchangé par la suspension
+      1970: 741    # 61 ans 9 mois (B0 : 744, soit 62 ans)
+
+# =============================================================================
+# B2 — POST-2028 (hypothèse conventionnelle)
+# =============================================================================
+B2_post_2028:
+
+  libelle: "Sortie de suspension au 1er janvier 2028"
+  applicable: false
+  statut: "HYPOTHESE DE TRAVAIL - non écrite dans la loi"
+  note: >
+    La LFSS 2026 fixe le terme de la suspension au 2028-01-01 sans préciser les
+    modalités de sortie. Trois trajectoires sont modélisées ci-dessous. Aucune
+    n'est plus légitime que les autres : le choix relève de l'hypothèse
+    politique, pas de la lecture juridique. Tout chiffrage à horizon 2028 et
+    au-delà doit être produit sous les trois modes et présenté comme une
+    fourchette, jamais sous un mode unique.
+
+  mode_sortie: "retour_progressif"
+
+  modes:
+
+    # -- 1 -----------------------------------------------------------------
+    retour_progressif:
+      libelle: "Le calendrier décalé se poursuit tel quel"
+      herite_de: "B1_suspension"
+      lecture: "littérale"
+      note: >
+        Lecture littérale de la LFSS 2026 : la suspension n'a jamais arrêté la
+        montée en charge, elle l'a décalée d'une génération. La grille B1
+        converge d'elle-même vers 64 ans à la génération 1969, soit après la
+        fin de la suspension. Rien ne se produit au 2028-01-01 : la trajectoire
+        se poursuit sans rupture.
+      continuite: true
+
+    # -- 2 -----------------------------------------------------------------
+    rattrapage_abrupt:
+      libelle: "Retour immédiat au calendrier de la réforme 2023"
+      herite_de: "B0_reforme_2023"
+      lecture: "restrictive"
+      note: >
+        La suspension est traitée comme une parenthèse close : à compter du
+        2028-01-01, la grille de 2023 s'applique à toute pension prenant effet.
+        Les générations 1966 à 1968 n'ayant pas encore liquidé perdent le
+        bénéfice du décalage.
+      continuite: false
+      discontinuite: >
+        ATTENTION - ce mode crée une rupture au 2028-01-01. Un assuré né en 1966
+        liquidant en décembre 2027 relève de 63 ans 3 mois ; le même liquidant en
+        janvier 2028 relève de 63 ans 6 mois. Effet de bord attendu : forte
+        concentration des liquidations sur le dernier trimestre 2027, à modéliser
+        explicitement dans le module de comportement de départ, faute de quoi le
+        chiffrage sous-estimera les dépenses de 2027 et surestimera celles de 2028.
+
+    # -- 3 -----------------------------------------------------------------
+    gel_perenne:
+      libelle: "Le gel devient permanent"
+      lecture: "extensive"
+      note: >
+        La montée en charge ne reprend jamais. L'âge légal reste à 62 ans et
+        9 mois et la durée requise à 170 trimestres pour toutes les générations
+        à compter de 1964. Correspond à une abrogation de fait de la réforme de
+        2023, sans abrogation formelle. C'est le scénario le plus coûteux des
+        trois, et celui qui porte l'écart le plus large avec B0.
+      continuite: true
+      age_legal_mois:
+        defaut_en_deca: 744
+        1961T4: 747
+        1962:   750
+        1963:   753
+        1964:   753    # 62 ans 9 mois, définitivement
+        defaut_au_dela: 753
+      duree_assurance_trimestres:
+        defaut_en_deca: 168
+        1961T4: 169
+        1962:   169
+        1963:   170
+        1964:   170    # 170 trimestres, définitivement
+        defaut_au_dela: 170
+
+# =============================================================================
+# POINTS DE CONTRÔLE
+# Assertions à faire vérifier automatiquement par la suite de tests.
+# =============================================================================
+controles:
+  - id: "convergence_64_ans"
+    description: "Les trois baselines convergent à 64 ans pour les générations tardives"
+    attendu: "B0[1975] == B1[1975] == 768"
+  - id: "gain_suspension_1964"
+    description: "La génération 1964 gagne un trimestre d'âge légal"
+    attendu: "B0[1964] - B1[1964] == 3"
+  - id: "gain_suspension_1966_1968"
+    description: "Les générations 1966-1968 gagnent 3 mois d'âge et 0 trimestre de durée"
+    attendu: "B0.age[g] - B1.age[g] == 3 et B0.duree[g] == B1.duree[g] pour g in 1966..1968"
+  - id: "neutralite_generations_anterieures"
+    description: "Aucun effet de la suspension avant la génération 1964"
+    attendu: "B0[g] == B1[g] pour g <= 1963"
+  - id: "modes_B2_ordonnes"
+    description: "Les trois modes de sortie s'ordonnent : gel <= progressif <= rattrapage"
+    attendu: "gel_perenne[g] <= retour_progressif[g] <= rattrapage_abrupt[g] pour tout g"
+  - id: "rattrapage_egale_B0"
+    description: "Le mode rattrapage_abrupt restitue exactement la grille B0"
+    attendu: "B2[rattrapage_abrupt][g] == B0[g] pour tout g"
+  - id: "monotonie"
+    description: "L'âge légal est croissant avec la génération dans chaque baseline"
+    attendu: "age_legal non décroissant"
+  - id: "plafond_duree"
+    description: "La durée requise ne dépasse jamais 172 trimestres"
+    attendu: "max(duree) == 172"

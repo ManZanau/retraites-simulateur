@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# Systeme
+.DS_Store
+Thumbs.db
+
+# Donnees EACR : volumineuses (~40 Mo), telechargees manuellement.
+# Voir donnees/LISEZMOI.md
+donnees/*.xlsx
+donnees/*.xls
+donnees/*.csv

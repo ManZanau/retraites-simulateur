@@ -1,0 +1,345 @@
+# =============================================================================
+# PARAMÈTRES FISCAUX ET SOCIAUX — PENSIONS DE RETRAITE
+# Année d'imposition 2026 (revenus 2025) / prélèvements sociaux 2026
+# =============================================================================
+#
+# Chaque valeur porte un champ `confiance` :
+#   confirme    plusieurs sources indépendantes concordantes
+#   conflit     sources divergentes — arbitrage documenté, à vérifier
+#   manquant    non trouvé, à compléter
+#
+# Aucune valeur n'a été vérifiée contre le texte légal lui-même. Les références
+# d'articles ci-dessous proviennent des sources secondaires et doivent être
+# recoupées au Légifrance avant usage en production.
+# =============================================================================
+
+meta:
+  version: "0.1.0"
+  date: "2026-08-19"
+  annee_imposition: 2026
+  annee_revenus: 2025
+  annee_prelevements_sociaux: 2026
+  champ_geographique: "France métropolitaine"
+  note_outre_mer: >
+    MANQUANT. Les seuils de CSG outre-mer suivent une grille distincte, non
+    collectée. Le simulateur doit refuser de traiter les DROM tant qu'elle
+    n'est pas renseignée, plutôt que d'appliquer silencieusement la grille
+    métropolitaine.
+
+# =============================================================================
+# 1. IMPÔT SUR LE REVENU
+# =============================================================================
+impot_revenu:
+
+  bareme:
+    reference: "Art. 197 CGI, loi de finances pour 2026, promulguée le 19/02/2026"
+    revalorisation: 0.009    # +0,9 %, indexation sur l'inflation
+    confiance: "confirme"    # six sources concordantes
+    unite: "euros par part de quotient familial"
+    tranches:
+      - { plafond: 11600,  taux: 0.00 }
+      - { plafond: 29579,  taux: 0.11 }
+      - { plafond: 84577,  taux: 0.30 }
+      - { plafond: 181917, taux: 0.41 }
+      - { plafond: null,   taux: 0.45 }
+
+  decote:
+    reference: "Art. 197-I-4 CGI"
+    confiance: "conflit"
+    taux: 0.4525
+    montant_celibataire: 897
+    montant_couple: 1483
+    seuil_application_celibataire: 1982   # IR brut au-delà duquel décote nulle
+    seuil_application_couple: 3277
+    note_conflit: >
+      Une source donne 889 € / 1 470 € avec un seuil couple à 3 248 €. Ces
+      valeurs correspondent au barème 2025 (revenus 2024) : la source semble
+      ne pas avoir été actualisée. Les valeurs retenues (897 / 1 483) figurent
+      dans trois sources rattachées explicitement à la LF 2026. À confirmer.
+
+  quotient_familial:
+    plafond_par_demi_part: 1807
+    confiance: "confirme"
+    note: >
+      Peu mordant pour les retraités, dont le foyer compte rarement des
+      personnes à charge. Implémenté pour correction, pas pour son impact.
+
+  abattement_pensions:
+    reference: "Art. 158-5-a CGI"
+    taux: 0.10
+    minimum_par_pensionne: 454
+    maximum_par_foyer: 4439
+    confiance: "confirme"
+    note_verification: >
+      Vérifié le 2026-09-07 : confirmé par les archives BOFiP (art. 158-5-a
+      CGI) et par la réponse ministérielle à la question écrite AN n°21770.
+      Le plafond de 4 439 € s'applique bien par foyer fiscal (pas doublé en
+      cas d'imposition commune), et le minimum de 454 € par pensionné. Un
+      couple de retraités à 60 000 € de pensions cumulées plafonne donc à
+      4 439 €, non à 8 878 €.
+    note_reforme_avortee: >
+      Le PLF 2026 prévoyait de remplacer cet abattement par un forfait de
+      2 000 € par pensionné, et de supprimer l'abattement pour personnes âgées
+      modestes. Les deux mesures ont été abandonnées face à l'opposition de
+      l'Assemblée nationale. À conserver comme scénario testable : c'est une
+      réforme déjà rédigée, susceptible de revenir.
+
+  abattement_salaires:
+    taux: 0.10
+    minimum: 509
+    maximum: 14555
+    confiance: "conflit"
+    note_conflit: >
+      Deux sources donnent 14 555 €, une donne 14 556 €. Écart d'un euro,
+      probable arrondi. Sans effet sensible ; à trancher au Légifrance.
+      Pertinent uniquement pour les foyers mêlant pension et salaire
+      (cumul emploi-retraite : 606 000 personnes en 2023).
+
+  exclusions_abattement:
+    confiance: "confirme"
+    ne_beneficient_pas:
+      - aspa
+      - rentes_accidents_du_travail
+      - certaines_allocations_veuvage
+    note: >
+      Important pour la cascade : l'ASPA n'ouvre pas droit à l'abattement.
+      Un basculement de pension contributive vers ASPA modifie donc l'assiette
+      imposable autrement qu'à proportion du montant.
+
+  seuil_non_recouvrement: 61
+  confiance_seuil: "confirme"
+
+# =============================================================================
+# 2. PRÉLÈVEMENTS SOCIAUX SUR LES PENSIONS
+# =============================================================================
+prelevements_sociaux:
+
+  reference: "Art. L.136-8 du Code de la sécurité sociale"
+  base_rfr: >
+    Le taux applicable en 2026 dépend du RFR de 2024, figurant sur l'avis
+    d'imposition 2025. Décalage de deux ans à reproduire impérativement dans
+    le simulateur : une réforme des pensions en année N ne modifie les taux de
+    CSG qu'en année N+2.
+  revalorisation_seuils: 0.018   # +1,8 % en 2026
+  confiance_structure: "confirme"
+
+  csg:
+    taux:
+      exonere:   { taux: 0.000, deductible: 0.000 }
+      reduit:    { taux: 0.038, deductible: 0.038 }   # intégralement déductible
+      median:    { taux: 0.066, deductible: 0.042 }
+      plein:     { taux: 0.083, deductible: 0.059 }
+    confiance: "confirme"
+    note_deductibilite: >
+      La fraction déductible se déduit du revenu imposable de l'année suivante.
+      Elle atténue la perte d'IR consécutive à une baisse de pension, et doit
+      figurer dans la cascade : l'ignorer surestimerait le retour fiscal.
+
+  crds:
+    taux: 0.005
+    confiance: "confirme"
+
+  casa:
+    taux: 0.003
+    confiance: "confirme"
+    non_due_si_taux_csg: ["exonere", "reduit"]
+    note: "La CASA n'est pas due au taux réduit de 3,8 %."
+
+  exoneration_en_cascade:
+    confiance: "confirme"
+    regle: >
+      L'exonération de CSG emporte exonération de CRDS et de CASA. Il n'existe
+      donc pas de situation où un retraité paie la CRDS sans payer la CSG.
+
+  seuils_rfr:
+    unite: "euros de RFR"
+    annee_rfr: 2024
+    zone: "metropole"
+    confiance: "arbitre"
+    note_structure: >
+      Les seuils sont définis pour une part fiscale, majorés d'un supplément
+      par demi-part additionnelle. Ce supplément DIFFÈRE selon la tranche —
+      ce n'est pas un pas unique. Les valeurs déduites des seuils publiés pour
+      1 et 2 parts donnent environ 3 484 € par demi-part pour l'exonération et
+      4 555 € pour la borne du taux réduit.
+    une_part:
+      plafond_exoneration: 13048
+      plafond_taux_reduit: 17057
+      plafond_taux_median: 26472
+    deux_parts:
+      plafond_exoneration: 20016
+      plafond_taux_reduit: 26167
+      plafond_taux_median: 40604   # ARBITRÉ le 2026-08-19 (voir note)
+    note_arbitrage: >
+      ARBITRÉ à 40 604 € le 2026-08-19, sur décision explicite. Les sources
+      divergeaient : 39 886 € (deux sources) contre 40 604 € (une source).
+      SENS DU BIAIS : le seuil retenu étant le PLUS HAUT, davantage de foyers
+      restent au taux médian de 6,6 % au lieu de basculer au taux plein de
+      8,3 %. L'assiette du taux plein est donc réduite, ce qui MINORE le
+      retour de CSG dans la cascade et MAJORE l'économie nette affichée d'une
+      réforme. Hypothèse favorable au rendement des coupes.
+      Reste à confirmer sur la grille officielle Assurance retraite ou URSSAF.
+    supplement_par_demi_part:
+      confiance: "manquant"
+      note: >
+        La grille complète au-delà de deux parts n'a pas été collectée. Peu
+        mordant pour les retraités seuls ou en couple sans personne à charge,
+        mais bloquant pour les foyers atypiques.
+
+  lissage:
+    confiance: "conflit"
+    regle_retenue: >
+      Le passage du taux réduit (3,8 %) au taux médian (6,6 %) suppose un
+      dépassement du seuil sur DEUX années consécutives.
+    note_conflit: >
+      Plusieurs sources généralisent la règle des deux ans à tous les
+      franchissements de palier. Une source syndicale affirme au contraire,
+      de façon circonstanciée et en militant pour son extension, que le
+      lissage NE s'applique PAS aux passages 0 % -> 3,8 % ni 6,6 % -> 8,3 %.
+      La précision de cette dernière et l'incohérence qu'il y aurait à
+      militer pour l'extension d'une règle déjà générale conduisent à retenir
+      la version restrictive. À vérifier à l'art. L.136-8 CSS.
+    implication_simulateur: >
+      Cette règle rend les taux de CSG dépendants de la trajectoire, pas
+      seulement du niveau. Une baisse de pension ne fait pas immédiatement
+      basculer vers un taux inférieur. Le module doit donc être capable de
+      raisonner sur deux années de RFR, pas une seule — contrainte
+      structurante pour la projection annuelle.
+
+  pensions_exonerees_par_nature:
+    confiance: "confirme"
+    liste:
+      - retraite_du_combattant
+      - retraite_mutualiste_anciens_combattants
+      - allocation_veuvage_securite_sociale
+      - aspa
+      - majoration_tierce_personne
+
+  non_residents:
+    confiance: "confirme"
+    regle: >
+      Les retraités domiciliés fiscalement hors de France ne sont pas assujettis
+      à ces prélèvements sociaux. Une cotisation d'assurance maladie de 3,2 %
+      peut s'appliquer selon l'affiliation (art. L.131-9 CSS).
+    implication: >
+      Les données de pension couvrent les retraités résidant en France ET à
+      l'étranger. Il faut donc isoler les non-résidents avant tout calcul
+      fiscal, sous peine de leur imputer des prélèvements inexistants.
+
+# =============================================================================
+# 3. REVALORISATIONS 2026 — pour la projection
+# =============================================================================
+revalorisations_2026:
+  cnav: 0.009            # +0,9 % en janvier 2026
+  agirc_arrco: 0.000     # gel
+  confiance: "confirme"
+  note: >
+    Divergence d'indexation entre base et complémentaire. Elle déforme la
+    distribution des pensions totales dans le temps : les polypensionnés du
+    privé, dont la part complémentaire est élevée, décrochent relativement.
+    À ne pas modéliser par un taux unique de revalorisation.
+
+# =============================================================================
+# 3bis. ASPA — ALLOCATION DE SOLIDARITÉ AUX PERSONNES ÂGÉES
+# =============================================================================
+aspa:
+
+  confiance: "confirme"    # huit sources concordantes, aucune divergence
+  reference: "Art. L.815-1 et suivants CSS"
+  revalorisation_2026: 0.009
+  date_effet: "2026-01-01"
+
+  nature: "allocation differentielle"
+  principe: >
+    L'ASPA comble l'écart entre les ressources du foyer et un montant garanti.
+    Elle n'est donc PAS un revenu qui s'ajoute : toute baisse de pension sous
+    le plafond est intégralement compensée, euro pour euro. C'est le mécanisme
+    qui annule le rendement d'un écrêtement portant sur le bas de la
+    distribution.
+
+  montants_mensuels:
+    personne_seule: 1043.59
+    couple: 1620.18
+  montants_annuels:
+    personne_seule: 12523.14
+    couple: 19442.21
+  note_couple: >
+    Le plafond couple s'applique au MÉNAGE, pas par personne. Il vaut environ
+    1,55 fois le plafond d'une personne seule, non le double.
+
+  fiscalite:
+    imposable: false
+    assujettie_csg: false
+    assujettie_crds: false
+    assujettie_casa: false
+    ouvre_droit_abattement_10: false
+    note: >
+      Conséquence pour la cascade : un basculement de pension contributive vers
+      ASPA fait disparaître à la fois l'assiette de CSG et l'assiette d'IR.
+      L'État et la Sécu perdent des recettes EN PLUS de verser l'allocation.
+      Le coût budgétaire d'un écrêtement en bas de distribution est donc
+      supérieur à la seule dépense d'ASPA.
+
+  conditions:
+    age_minimum: 65
+    age_abaisse_si: ["inaptitude", "handicap", "aah", "ancien_combattant"]
+    residence_mois_par_an: 9
+    note_residence: >
+      Porté de 6 à 9 mois par la réforme des retraites de 2023.
+
+  abattement_revenus_activite_trimestriel:
+    personne_seule: 1640.73
+    couple: 2734.55
+    confiance: "confirme"
+
+  recuperation_sur_succession:
+    applicable: true
+    seuil_actif_net: null
+    confiance: "manquant"
+    note: >
+      L'ASPA est récupérable sur la succession au-delà d'un seuil d'actif net,
+      non collecté. Deux effets à modéliser, tous deux minorant le coût net :
+      les sommes récupérées, et surtout l'effet dissuasif sur le recours.
+
+  taux_de_recours:
+    valeur: 1.0
+    confiance: "manquant"
+    criticite: "MAJEURE"
+    note: >
+      HYPOTHÈSE PAR DÉFAUT, VOLONTAIREMENT NAÏVE. Le non-recours à l'ASPA est
+      documenté comme important, notamment du fait de la récupération sur
+      succession. Fixer le taux à 1 suppose que tout retraité rendu éligible
+      par un écrêtement demande effectivement l'allocation.
+      SENS DU BIAIS : à 1, on MAXIMISE le contre-effet, donc on MINIMISE
+      l'économie nette d'une réforme ciblant le bas de la distribution. C'est
+      l'hypothèse prudente du point de vue budgétaire, mais elle surestime la
+      protection réelle des retraités modestes. Les deux lectures doivent être
+      présentées. À documenter à partir des travaux DREES sur le non-recours.
+
+# =============================================================================
+# 4. À COMPLÉTER
+# =============================================================================
+manquants:
+  - id: "aspa_taux_de_recours"
+    description: "Taux de recours effectif à l'ASPA"
+    criticite: "MAJEURE"
+    raison: >
+      Les montants sont renseignés, mais le taux de recours est fixé à 1 par
+      défaut. Ce paramètre pilote directement l'ampleur du contre-effet sur
+      les déciles bas.
+  - id: "aspa_seuil_recuperation_succession"
+    criticite: "important"
+  - id: "apl_et_aides_logement"
+    description: "Barème des aides au logement pour les retraités"
+    criticite: "important"
+  - id: "complementaire_sante_solidaire"
+    description: "Plafonds de la CSS"
+    criticite: "secondaire"
+  - id: "exonerations_locales"
+    description: "Taxe foncière, taxe d'habitation résidence secondaire"
+    criticite: "secondaire"
+    note: "Relève des APUL — nécessaire pour la ventilation par sous-secteur."
+  - id: "seuils_csg_outre_mer"
+    criticite: "important"
+  - id: "grille_csg_au_dela_de_deux_parts"
+    criticite: "secondaire"

@@ -1,0 +1,313 @@
+# =============================================================================
+# SPÉCIFICATION DES MARGES DE CALAGE — POPULATION SYNTHÉTIQUE DE RETRAITÉS
+# =============================================================================
+#
+# ÉTAT : SQUELETTE. Aucune valeur numérique réelle n'est renseignée.
+# Les fichiers EACR n'ont pas pu être téléchargés (pas d'accès réseau depuis
+# l'environnement de développement). Ce fichier décrit la structure attendue et
+# la provenance exacte de chaque marge ; les tableaux de valeurs sont à charger
+# depuis les fichiers open data.
+#
+# SOURCE DES DONNÉES
+#   DREES, base de données EACR enrichie du modèle ANCETRE et de l'EIR
+#   Jeu de données `donnes_eacr` sur data.drees.solidarites-sante.gouv.fr
+#   Millésime le plus récent : données 2004-2024, mise à disposition mai 2026
+#   Licence ouverte 2.0
+#
+# OBLIGATION DE LICENCE
+#   La Licence ouverte 2.0 impose la mention de la source à chaque utilisation.
+#   Toute sortie du simulateur doit porter : « Source : DREES, EACR, modèle
+#   ANCETRE ». Ce n'est pas une politesse, c'est une condition d'usage.
+#
+# -----------------------------------------------------------------------------
+# AVERTISSEMENT MÉTHODOLOGIQUE : DOUBLE COMPTE DES POLYPENSIONNÉS
+# -----------------------------------------------------------------------------
+# L'EACR ventile par CAISSE VERSEUSE. Un retraité du privé perçoit typiquement
+# une pension CNAV et une pension AGIRC-ARRCO : il est compté deux fois dans la
+# somme des effectifs par caisse. Additionner les effectifs par régime donne
+# donc un total très supérieur au nombre réel de retraités.
+#
+# Deux notions à ne jamais confondre :
+#
+#   effectif_par_caisse    somme sur les caisses > nombre de retraités
+#                          utile pour caler les MONTANTS versés par caisse
+#
+#   regime_principal       partition, somme = nombre de retraités
+#                          notion ANCETRE/EIR : régime représentant plus de la
+#                          moitié de la carrière. Les polypensionnés répartis
+#                          sur trois régimes de base sans majorité relèvent
+#                          d'une catégorie résiduelle dédiée.
+#
+# RÈGLE POUR LE SIMULATEUR
+#   - Dimension `regime_principal` pour compter les personnes et construire les
+#     déciles de pension : c'est une partition, elle se cale.
+#   - Dimension `caisse` pour ventiler les MONTANTS et imputer l'économie d'une
+#     réforme : c'est ce qui détermine quel organisme encaisse.
+#   Ces deux dimensions coexistent et ne se substituent pas.
+#
+# AMPLEUR MESURÉE SUR DONNÉES RÉELLES (EACR 2024, table A-Cadrage) :
+#   Tous régimes ANCETRE, droit direct ......  17 298 245
+#   Somme des effectifs par caisse ..........  39 789 942
+#   Surestimation ...........................  +130 %
+#   La version 0.1 de ce fichier avançait +40 %, très en deçà de la réalité.
+#   Le facteur réel est de 2,3.
+# =============================================================================
+
+meta:
+  version: "0.1.0-squelette"
+  date: "2026-08-19"
+  annee_reference: 2024
+  statut: "STRUCTURE SEULE - valeurs à charger"
+  mention_source_obligatoire: "Source : DREES, EACR, modèle ANCETRE"
+
+# -----------------------------------------------------------------------------
+# Dimensions du tableau à caler
+# -----------------------------------------------------------------------------
+dimensions:
+
+  sexe:
+    modalites: ["femme", "homme"]
+    taille: 2
+
+  generation:
+    description: "Année de naissance"
+    borne_min: 1925
+    borne_max: 1964
+    taille: 40
+    note: >
+      Ventilation par génération et par sexe disponible depuis 2004 pour les
+      droits directs, depuis 2008 seulement pour les droits dérivés. Les
+      générations les plus anciennes ont des effectifs faibles et une forte
+      sur-représentation féminine (écart d'espérance de vie) : ne pas les
+      agréger sans précaution.
+
+  regime_principal:
+    description: "Partition - somme des effectifs = nombre de retraités"
+    modalites:
+      - cnav                    # régime général
+      - fonction_publique_etat  # SRE
+      - cnracl                  # territoriale et hospitalière
+      - msa_salaries
+      - msa_non_salaries
+      - ssi                     # ex-RSI, artisans et commerçants
+      - liberaux                # CNAVPL, CNBF
+      - regimes_speciaux        # FSPOEIE, SNCF, RATP, CNIEG, Enim, CANSSM,
+                                # Cavimac, CRPCEN, Caisse de réserve
+      - polypensionne_sans_majoritaire
+    taille: 9
+
+  tranche_pension:
+    description: "Tranches de pension mensuelle brute, tous régimes"
+    unite: "euros par mois"
+    bornes: [0, 500, 750, 1000, 1250, 1500, 1750, 2000, 2500, 3000, 4000, null]
+    taille: 11
+    note: >
+      Tranches à ajuster sur celles effectivement publiées dans le tableau D.
+      Elles doivent être assez fines dans le haut de la distribution pour que
+      les déciles supérieurs soient identifiables : c'est là que se joue tout
+      scénario d'écrêtement, et une tranche terminale ouverte trop large y
+      rendrait le calcul du décile 10 très imprécis.
+
+  caisse:
+    description: "NON une partition - un individu peut relever de plusieurs caisses"
+    usage: "ventilation des montants uniquement, jamais des effectifs"
+    modalites: ["cnav", "agirc_arrco", "sre", "cnracl", "msa", "ssi",
+                "liberaux", "ircantec", "regimes_speciaux"]
+    taille: 9
+
+# -----------------------------------------------------------------------------
+# Marges à charger
+# -----------------------------------------------------------------------------
+# Chaque entrée précise le tableau source et son onglet. `provisoire: true`
+# signale une marge estimée plutôt qu'observée : elle remonte automatiquement
+# dans le diagnostic de calage.
+# -----------------------------------------------------------------------------
+marges:
+
+  - nom: "effectifs_generation_sexe"
+    dimensions: ["generation", "sexe"]
+    source: "DREES EACR/ANCETRE, tableau A"
+    fichier: "A_RENSEIGNER"
+    provisoire: false
+    priorite: 1
+    note: "Marge la plus solide. Sert de contrainte structurante."
+
+  - nom: "effectifs_regime_principal_sexe"
+    dimensions: ["regime_principal", "sexe"]
+    source: "DREES EIR/ANCETRE, régime principal"
+    fichier: "A_RENSEIGNER"
+    provisoire: false
+    priorite: 1
+    note: >
+      Attention à utiliser la table `régime principal`, pas la table par caisse
+      verseuse. Voir l'avertissement en tête de fichier.
+
+  - nom: "effectifs_tranche_sexe"
+    dimensions: ["tranche_pension", "sexe"]
+    source: "INTROUVABLE DANS L'EACR"
+    statut: "IMPOSSIBLE"
+    priorite: 1
+    note_blocage: >
+      VÉRIFIÉ SUR LES FICHIERS RÉELS : aucune table de l'EACR ne ventile les
+      effectifs par tranche de montant de pension. Les tables A, B, C, D, E, G,
+      H, I et J ont été inspectées. Elles fournissent des MOYENNES (m1, m2,
+      mont) par croisement d'âge, sexe, lieu de naissance, régime et conditions
+      de liquidation — jamais une distribution.
+      La référence au « tableau D (montant perçu) » de la version 0.1 de ce
+      fichier était erronée : la table D porte sur les droits dérivés, ventilés
+      par âge, pas par montant.
+      CONSÉQUENCE : la dimension décile ne peut PAS être calée sur l'EACR. Elle
+      exige soit l'EIR (accès CASD), soit une hypothèse de forme paramétrique
+      pour la distribution intra-cellule. Ce choix doit être explicite et
+      documenté : il conditionne tout scénario d'écrêtement ciblé.
+
+  - nom: "effectifs_regime_tranche"
+    dimensions: ["regime_principal", "tranche_pension"]
+    source: "A_VERIFIER - croisement peut-être non publié"
+    fichier: "A_RENSEIGNER"
+    provisoire: true
+    priorite: 2
+    note: >
+      MARGE CRITIQUE. Sans ce croisement, l'IPF supposera l'indépendance entre
+      régime et niveau de pension, ce qui est manifestement faux : la
+      distribution des pensions de la fonction publique d'État n'a rien de
+      commun avec celle des non-salariés agricoles. Si le croisement n'est pas
+      publié, il faut le reconstituer à partir des pensions moyennes par régime
+      publiées dans le Panorama, en imposant au minimum la moyenne par régime
+      comme contrainte. À défaut, la structure par décile × régime sera fausse,
+      et avec elle tout scénario d'écrêtement ciblé.
+
+  - nom: "distribution_tranches_csg"
+    dimensions: ["tranche_csg"]
+    source: "DREES EACR 2024, table A-Prelev_sociaux, modèle ANCETRE"
+    statut: "DISPONIBLE - substitut partiel"
+    provisoire: false
+    priorite: 1
+    valeurs_2024_droit_direct:
+      exonere:  3815436     # 22,1 %
+      reduit:   2320138     # 13,4 %
+      median:   3742249     # 21,6 %
+      plein:    7420422     # 42,9 %
+      total:   17298245
+    note: >
+      SUBSTITUT PARTIEL À LA DISTRIBUTION MANQUANTE. Les tranches de CSG sont
+      définies par des seuils de revenu fiscal de référence : cette table donne
+      donc quatre points de la distribution des RFR des retraités, série
+      disponible de 2012 à 2024.
+      ATTENTION AU CHANGEMENT D'UNITÉ : le RFR porte sur le FOYER FISCAL et
+      inclut tous les revenus, pas seulement les pensions. Ces quatre points ne
+      sont donc pas des quantiles de pension individuelle et ne s'y convertissent
+      pas directement. Ils constituent en revanche une contrainte de calage
+      directement pertinente pour le module fiscal, puisque ce sont exactement
+      les tranches qu'il applique.
+    rupture_de_serie: >
+      Le taux médian n'existe qu'à partir de 2019. La part des exonérés passe de
+      30,3 % en 2022 à 22,3 % en 2023 : rupture de huit points en un an, à
+      élucider avant tout usage en série longue.
+
+  - nom: "montants_caisse"
+    dimensions: ["caisse"]
+    source: "DREES EACR, tableau A - montants versés"
+    fichier: "A_RENSEIGNER"
+    provisoire: false
+    priorite: 1
+    unite: "euros par an"
+    note: >
+      Calage des masses financières, pas des effectifs. Contrainte de bouclage :
+      la somme doit correspondre au total des pensions versées publié par la
+      DREES pour l'année de référence.
+
+# -----------------------------------------------------------------------------
+# Structure a priori (seed)
+# -----------------------------------------------------------------------------
+seed:
+  methode: "uniforme_avec_zeros_structurels"
+  zeros_structurels:
+    - description: "Régimes fermés ou éteints pour les générations récentes"
+      a_renseigner: true
+    - description: "Combinaisons génération × régime impossibles"
+      a_renseigner: true
+  note: >
+    Un seed uniforme suppose l'indépendance conditionnelle entre dimensions non
+    contraintes conjointement. C'est acceptable au premier tour, mais dès que
+    l'EIR sera accessible, il faudra remplacer le seed uniforme par la structure
+    jointe observée : l'IPF conserve les odds-ratios du seed, donc un bon seed
+    améliore le résultat bien plus qu'une marge supplémentaire.
+
+# -----------------------------------------------------------------------------
+# Contrôles de bouclage
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# Chiffres de calage OBSERVÉS — millésime 2024
+# Source : Drees, communiqué du 26/05/2026 accompagnant la diffusion open data
+# -----------------------------------------------------------------------------
+calage_observe_2024:
+  confiance: "confirme"
+  date_publication: "2026-05-26"
+
+  effectifs:
+    droit_direct_tous_lieux: 17300000
+    droit_direct_residant_en_france: 16400000
+    evolution_annuelle: 0.007
+    droit_derive_seul: 900000        # quasi exclusivement des femmes
+    total_pensionnes: 18200000
+    note_double_compte: >
+      Ces effectifs sont ceux du modèle ANCETRE, qui détermine les effectifs
+      totaux SANS DOUBLE COMPTE. Ils ne s'obtiennent pas en sommant les
+      effectifs par caisse. C'est la marge de contrôle décisive.
+
+  pension_moyenne_mensuelle_brute:
+    droit_direct_residant_en_france: 1705
+    champ: "hors majoration de pension pour trois enfants ou plus"
+    evolution_annuelle: 0.008
+    ecart_femmes_hommes_droit_direct: -0.36
+    ecart_femmes_hommes_avec_reversion: -0.25
+
+  flux_2024:
+    primo_liquidants: 718000
+    evolution_annuelle: -0.07
+    dont_cnav: 648000
+    dont_fpe: 45000
+    dont_cnracl: 63000
+
+  age_conjoncturel_de_depart:
+    regime_general: "63 ans 7 mois"
+    fonction_publique_civile_etat: "63 ans 2 mois"
+    note: >
+      Écart de 5 mois de progression à la FPE contre 1 mois au régime général :
+      la montée en charge de la réforme 2023 n'a pas le même rythme selon les
+      régimes. À ne pas modéliser par un comportement de départ unique.
+
+  implication_pour_le_simulateur: >
+    La pension moyenne de 1 705 €/mois se situe exactement dans la zone de
+    rendement maximal identifiée par le module fiscal (environ 1 600 €/mois).
+    Le retraité moyen est donc précisément celui sur lequel une coupe rapporte
+    le plus : trop au-dessus de l'ASPA pour être compensé, encore trop peu
+    imposé pour que le retour fiscal soit important.
+
+controles_bouclage:
+  - nom: "effectif_total"
+    description: "Nombre de retraités de droit direct, tous régimes"
+    reference: 17300000    # Drees, données 2024
+    tolerance_relative: 0.001
+
+  - nom: "masse_totale_pensions"
+    description: "Total des pensions versées"
+    reference: "DREES Panorama - à relever pour l'année de référence"
+    tolerance_relative: 0.005
+
+  - nom: "pension_moyenne_par_regime"
+    description: "Pension moyenne recalculée vs publiée, régime par régime"
+    tolerance_relative: 0.02
+    note: >
+      Contrôle le plus discriminant. Un écart supérieur à 2 % sur un régime
+      signale que la distribution par tranche attribuée à ce régime est fausse,
+      généralement faute de marge croisée régime × tranche.
+
+  - nom: "ecart_pension_femmes_hommes"
+    description: "Écart de pension de droit direct entre femmes et hommes"
+    reference: -0.36       # Drees, données 2024
+    tolerance_relative: 0.02
+    note: >
+      Contrôle de cohérence transversal. S'il n'est pas reproduit, la structure
+      par sexe est mal calée et les scénarios redistributifs seront biaisés.

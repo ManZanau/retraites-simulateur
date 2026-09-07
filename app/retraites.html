@@ -1,0 +1,2045 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Où va l'argent des retraites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --encre:#12203A; --encre-2:#25375C; --bleu:#2E4E86; --brume:#7E8FAE;
+  --papier:#EDEFF3; --carte:#F7F8FA; --blanc:#FFF; --trait:#D2D8E2;
+  --or:#B8901F; --or-clair:#E9C55A; --perte:#A33A31; --gain:#22664B; --r:2px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+body{background:var(--papier);color:var(--encre);
+  font-family:'Instrument Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.num,.mono{font-family:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.wrap{max-width:760px;margin:0 auto;padding:0 1.25rem}
+:focus-visible{outline:2px solid var(--bleu);outline-offset:2px}
+
+.tete{background:var(--encre);color:var(--blanc);padding:1.5rem 0 0}
+.tete h1{font-size:clamp(1.45rem,5.2vw,2.05rem);font-weight:700;letter-spacing:-.028em;
+  line-height:1.1;max-width:20ch}
+.tete p{font-size:.94rem;line-height:1.5;color:#B9C6DC;margin-top:.55rem;max-width:54ch}
+.modes{display:flex;gap:1.4rem;margin-top:1.15rem;border-bottom:1px solid rgba(255,255,255,.14)}
+.modes button{background:none;border:0;cursor:pointer;padding:.7rem 0 .6rem;font:inherit;
+  font-size:.85rem;font-weight:600;color:rgba(255,255,255,.5);border-bottom:2px solid transparent;
+  -webkit-tap-highlight-color:transparent}
+.modes button[aria-pressed="true"]{color:var(--blanc);border-bottom-color:var(--or-clair)}
+
+.nav{position:sticky;top:0;z-index:30;background:var(--papier);border-bottom:1px solid var(--trait)}
+.nav .wrap{display:flex;gap:1.3rem;overflow-x:auto;scrollbar-width:none}
+.nav .wrap::-webkit-scrollbar{display:none}
+.onglet{flex:0 0 auto;background:none;border:0;cursor:pointer;padding:.85rem 0 .75rem;font:inherit;
+  font-size:.86rem;font-weight:600;color:var(--brume);border-bottom:2px solid transparent;
+  -webkit-tap-highlight-color:transparent;white-space:nowrap}
+.onglet[aria-selected="true"]{color:var(--encre);border-bottom-color:var(--encre)}
+section[hidden]{display:none}
+main{padding:1.6rem 0 4rem}
+
+h2{font-size:1.1rem;font-weight:600;letter-spacing:-.015em;margin:2.1rem 0 .3rem}
+h2:first-child{margin-top:0}
+h3{font-size:.95rem;font-weight:600;margin-bottom:.3rem}
+.sous{font-size:.86rem;color:var(--encre-2);margin-bottom:.85rem;max-width:66ch;line-height:1.55}
+.note{font-size:.83rem;color:var(--encre-2);line-height:1.62;max-width:70ch;margin:.7rem 0}
+.note b{color:var(--encre);font-weight:600}
+
+.res{background:var(--encre);color:var(--blanc);border-radius:var(--r);
+  padding:1.35rem 1.25rem 1.15rem}
+.res-lig{display:flex;justify-content:space-between;gap:1.5rem;flex-wrap:wrap}
+.res-bloc{flex:1 1 9rem;min-width:8.5rem}
+.res-lib{font-size:.76rem;color:#9DB0CD;line-height:1.35;margin-bottom:.18rem}
+.res-val{font-size:clamp(1.5rem,6.4vw,2rem);font-weight:600;letter-spacing:-.035em;line-height:1}
+.res-val.gain{color:var(--or-clair)} .res-val.perte{color:#F0968D}
+.res-app{font-size:.76rem;color:#9DB0CD;margin-top:.28rem;line-height:1.4}
+.res svg{display:block;width:100%;height:auto;margin-top:1.1rem}
+.res-legende{display:flex;gap:1.1rem;font-size:.72rem;color:#9DB0CD;margin-top:.35rem;flex-wrap:wrap}
+.res-legende i{display:inline-block;width:14px;height:0;border-top:2px solid;margin-right:.32rem;
+  vertical-align:middle}
+
+.groupe{background:var(--carte);border:1px solid var(--trait);border-radius:var(--r);
+  padding:.2rem 1rem;margin-bottom:.9rem}
+.lev{display:grid;grid-template-columns:1fr auto;gap:.15rem .9rem;padding:.78rem 0;
+  border-bottom:1px solid var(--trait)}
+.lev:last-child{border-bottom:0}
+.lev .nom{font-size:.88rem;font-weight:600;line-height:1.25}
+.lev .det{font-size:.74rem;color:var(--brume);line-height:1.3}
+.lev .val{grid-row:1/3;align-self:center;font-size:.94rem;font-weight:600;text-align:right;
+  min-width:4.4rem;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+.lev .val.neg{color:var(--perte)} .lev .val.pos{color:var(--gain)}
+.lev input[type=range]{grid-column:1/3;margin-top:.5rem}
+
+/* Déciles : dix lignes serrées sur une seule rangée chacune. Le libellé et
+   la borne tiennent à gauche, le curseur au centre, la valeur à droite. */
+.lev-c{display:grid;grid-template-columns:6.6rem 1fr 3.1rem;gap:.7rem;align-items:center;
+  padding:.34rem 0;border-bottom:1px solid var(--trait)}
+.lev-c:last-child{border-bottom:0}
+.dnom{font-size:.8rem;font-weight:600;line-height:1.15;white-space:nowrap}
+.dnom .det{display:block;font-size:.68rem;font-weight:400;color:var(--brume);
+  letter-spacing:-.01em}
+.lev-c input[type=range]{margin:0}
+.lev-c input[type=range]::-webkit-slider-thumb{width:19px;height:19px}
+.lev-c input[type=range]::-moz-range-thumb{width:19px;height:19px}
+.lev-c .val{font-size:.83rem;font-weight:600;text-align:right}
+@media (max-width:400px){.lev-c{grid-template-columns:5.4rem 1fr 2.7rem;gap:.5rem}
+  .dnom .det{font-size:.63rem}}
+input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:3px;
+  background:var(--trait);border-radius:2px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;
+  border-radius:50%;background:var(--blanc);border:2px solid var(--encre);cursor:pointer;
+  box-shadow:0 1px 3px rgba(18,32,58,.28)}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--blanc);
+  border:2px solid var(--encre);cursor:pointer}
+input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var(--bleu)}
+
+.puces{display:flex;flex-wrap:wrap;gap:.4rem;margin:.6rem 0 .9rem}
+.puce{background:var(--blanc);border:1px solid var(--trait);border-radius:var(--r);
+  color:var(--encre-2);padding:.5rem .75rem;min-height:40px;font:inherit;font-size:.8rem;
+  font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.puce:hover{border-color:var(--encre-2)}
+.puce[data-actif="1"]{background:var(--encre);border-color:var(--encre);color:var(--blanc)}
+.duo{display:flex;border:1px solid var(--trait);border-radius:var(--r);overflow:hidden;
+  margin-bottom:.7rem}
+.duo button{flex:1;background:var(--blanc);border:0;border-right:1px solid var(--trait);
+  padding:.62rem .5rem;min-height:42px;font:inherit;font-size:.8rem;font-weight:600;
+  color:var(--brume);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.duo button:last-child{border-right:0}
+.duo button[aria-pressed="true"]{background:var(--encre);color:var(--blanc)}
+.action{background:var(--encre);color:var(--blanc);border:1px solid var(--encre);
+  border-radius:var(--r);padding:.62rem 1rem;min-height:44px;font:inherit;font-size:.83rem;
+  font-weight:600;cursor:pointer}
+.action.sec{background:none;color:var(--encre)}
+
+table{width:100%;border-collapse:collapse;font-size:.85rem;margin:.5rem 0 .8rem}
+th,td{padding:.5rem .4rem;text-align:right;border-bottom:1px solid var(--trait);vertical-align:top}
+th:first-child,td:first-child{text-align:left}
+thead th{font-size:.74rem;font-weight:600;color:var(--brume);border-bottom-color:var(--encre-2)}
+tbody tr:last-child td{border-bottom:0}
+tr.total td{border-top:1px solid var(--encre-2);border-bottom:0;font-weight:600}
+td.neg{color:var(--perte)} td.pos{color:var(--gain)}
+td .fin,.fin{display:block;font-size:.72rem;color:var(--brume);font-weight:400}
+
+.bloc{border-top:1px solid var(--trait);padding-top:1rem;margin-top:1.3rem}
+.bloc p{font-size:.87rem;color:var(--encre-2);margin-bottom:.6rem;max-width:70ch;line-height:1.6}
+.bloc p:last-child{margin-bottom:0}
+.deux{display:grid;gap:.8rem;margin:.8rem 0}
+@media (min-width:620px){.deux{grid-template-columns:1fr 1fr}}
+.voix{background:var(--carte);border:1px solid var(--trait);border-radius:var(--r);padding:.85rem}
+.voix h4{font-size:.78rem;font-weight:600;margin-bottom:.3rem}
+.voix.a h4{color:var(--bleu)} .voix.b h4{color:var(--perte)}
+.voix p{font-size:.82rem;margin:0}
+
+#voile{display:none;position:fixed;inset:0;background:rgba(18,32,58,.6);z-index:80}
+#voile.on{display:block}
+#rapport{display:none;position:fixed;inset:0;z-index:90;overflow-y:auto;background:var(--blanc);
+  -webkit-overflow-scrolling:touch}
+#rapport.on{display:block}
+#rap-actions{position:sticky;top:0;background:var(--blanc);border-bottom:1px solid var(--trait);z-index:2}
+#rap-actions .wrap{display:flex;gap:.45rem;padding-top:.7rem;padding-bottom:.7rem;flex-wrap:wrap}
+#rap-actions button{flex:1 1 auto;min-height:44px}
+#rap-corps{padding-bottom:3rem}
+.rap-tete{border-bottom:2px solid var(--encre);padding:1.5rem 0 .9rem;margin-bottom:1rem}
+.rap-tete h1{font-size:1.45rem;font-weight:700;letter-spacing:-.025em;line-height:1.14}
+.rap-meta{font-size:.76rem;color:var(--brume);margin-top:.45rem;line-height:1.5}
+.rap-cle{border:1px solid var(--encre);border-radius:var(--r);padding:.95rem;margin:0 0 1.3rem}
+.rap-cle .v{font-size:1.65rem;font-weight:600;letter-spacing:-.03em;line-height:1.08;margin:.15rem 0}
+.rap-lig{display:flex;justify-content:space-between;gap:1.2rem;padding:.34rem 0;
+  border-bottom:1px solid var(--trait);font-size:.86rem}
+.rap-lig .v{font-weight:600;white-space:nowrap}
+.rap-lig.t{border-bottom:0;border-top:1px solid var(--encre-2);margin-top:.2rem;padding-top:.45rem;
+  font-weight:600}
+.faits{list-style:none}
+.faits li{display:flex;gap:.8rem;align-items:baseline;padding:.36rem 0;
+  border-bottom:1px solid var(--trait);font-size:.86rem}
+.faits li .n{font-weight:600;white-space:nowrap;min-width:5.6rem;text-align:right;
+  font-family:'IBM Plex Mono',monospace}
+.faits li .n.pos{color:var(--gain)} .faits li .n.neg{color:var(--perte)}
+.rap-invite{border:1px solid var(--or);border-radius:var(--r);padding:.9rem;margin-top:1.2rem;
+  font-size:.85rem}
+.rap-invite .lien{display:block;background:var(--papier);padding:.5rem;margin-top:.45rem;
+  font-size:.7rem;word-break:break-all;color:var(--bleu);border-radius:var(--r);
+  font-family:'IBM Plex Mono',monospace}
+.pied{font-size:.72rem;color:var(--brume);line-height:1.65;margin-top:1.4rem;
+  border-top:1px solid var(--trait);padding-top:.8rem}
+
+body.simple .avance{display:none!important}
+body:not(.simple) .simple-seul{display:none!important}
+
+@media print{
+  @page{margin:16mm 14mm;size:A4}
+  body{background:#fff;font-size:10.5pt}
+  .tete,.nav,main,#rap-actions,#voile{display:none!important}
+  #rapport{display:block!important;position:static;overflow:visible}
+  #rap-corps{padding:0}
+  .wrap{max-width:none;padding:0}
+  .rap-cle,.faits li,.rap-invite{break-inside:avoid}
+  h2{break-after:avoid}
+}
+</style>
+</head>
+<body class="simple">
+
+<header class="tete">
+  <div class="wrap">
+    <h1>Chaque euro retiré aux retraites n'en rapporte pas un</h1>
+    <p>Une partie revient par l'impôt, une autre repart en minimum vieillesse. Déplacez les curseurs : vous verrez ce qui reste vraiment, dès la première année et jusqu'en 2070.</p>
+    <div class="modes" role="group" aria-label="Niveau de détail">
+      <button id="m-simple" aria-pressed="true">Version simple</button>
+      <button id="m-expert" aria-pressed="false">Version détaillée</button>
+    </div>
+  </div>
+</header>
+
+<nav class="nav"><div class="wrap" role="tablist">
+  <button class="onglet" role="tab" aria-selected="true" data-o="pilot">Décider</button>
+  <button class="onglet avance" role="tab" aria-selected="false" data-o="inc">Qui paie</button>
+  <button class="onglet avance" role="tab" aria-selected="false" data-o="obj">Atteindre une cible</button>
+  <button class="onglet avance" role="tab" aria-selected="false" data-o="cmp">Comparer</button>
+  <button class="onglet" role="tab" aria-selected="false" data-o="meth">Méthode</button>
+</div></nav>
+
+<main><div class="wrap">
+
+<section id="pilot">
+  <div class="res" id="res"></div>
+
+  <div class="simple-seul">
+    <div class="groupe" id="lev-simple" style="margin-top:1.4rem"></div>
+    <div class="note" id="mot-simple"></div>
+  </div>
+
+  <div class="avance">
+    <h2>Scénarios</h2>
+    <div class="duo" style="max-width:22rem">
+      <button id="mode-remplacer" aria-pressed="true">Un seul</button>
+      <button id="mode-cumuler" aria-pressed="false">Cumuler</button>
+    </div>
+    <div class="puces" id="presets"></div>
+    <div class="note" id="actifs"></div>
+
+    <h2>Montants des pensions</h2>
+    <p class="sous">Les taux sont marginaux : comme dans un barème d'impôt, un taux ne porte que sur la fraction de pension située dans sa tranche.</p>
+    <div class="groupe" id="lev-deciles"></div>
+    <div class="groupe" id="lev-bornes"></div>
+    <div class="note" id="mot-ordre"></div>
+
+    <h2>Minimum vieillesse</h2>
+    <div class="groupe" id="lev-aspa"></div>
+    <div class="note" id="mot-aspa"></div>
+
+    <h2>Âge et durée</h2>
+    <div class="groupe" id="lev-age"></div>
+    <div class="note" id="mot-age"></div>
+
+    <h2>Recettes</h2>
+    <div class="groupe" id="lev-recettes"></div>
+    <div class="note" id="mot-recettes"></div>
+
+    <h2>Hypothèses</h2>
+    <p class="sous">Ces réglages ne sont pas des décisions politiques mais des paramètres du contexte, que personne ne pilote directement.</p>
+    <div class="groupe" id="lev-hyp"></div>
+    <div class="note" id="mot-hyp"></div>
+    <table id="tab-prod"></table>
+  </div>
+</section>
+
+<section id="inc" hidden>
+  <h2>De l'économie affichée à l'économie réelle</h2>
+  <table id="tab-cascade"></table>
+  <div class="note" id="mot-cascade"></div>
+  <h2>Effet par décile de retraités</h2>
+  <table id="tab-deciles"></table>
+  <div class="note" id="mot-deciles"></div>
+  <h2>Masses en jeu</h2>
+  <table id="tab-masses"></table>
+  <div class="note" id="mot-masses"></div>
+  <h2>Quel régime, quelle autorité</h2>
+  <table id="tab-regimes"></table>
+  <div class="note" id="mot-regimes"></div>
+  <table id="tab-imputation"></table>
+  <div class="note" id="mot-imputation"></div>
+</section>
+
+<section id="obj" hidden>
+  <h2>Fixer la cible, laisser l'outil doser</h2>
+  <p class="sous">Plutôt que de chercher à tâtons la bonne combinaison, indiquez la somme à dégager et les leviers autorisés.</p>
+  <div class="groupe" id="lev-cible"></div>
+  <h3>Leviers autorisés</h3>
+  <div class="puces" id="cb-leviers"></div>
+  <div id="cb-res"></div>
+  <div class="note" id="mot-cible"></div>
+</section>
+
+<section id="cmp" hidden>
+  <h2>Deux scénarios, les mêmes lignes</h2>
+  <p class="sous">Réglez un scénario, enregistrez-le en A, réglez-en un autre, enregistrez-le en B.</p>
+  <div class="puces">
+    <button class="puce" id="cp-a">Enregistrer en A</button>
+    <button class="puce" id="cp-b">Enregistrer en B</button>
+    <button class="puce" id="cp-la">Reprendre A</button>
+    <button class="puce" id="cp-lb">Reprendre B</button>
+    <button class="puce" id="cp-vider">Effacer</button>
+  </div>
+  <table id="tab-comp"></table>
+  <div class="note" id="mot-comp"></div>
+</section>
+
+<section id="meth" hidden></section>
+
+</div></main>
+
+<div id="voile"></div>
+<div id="rapport">
+  <div id="rap-actions"><div class="wrap">
+    <button class="action" id="rap-partager">Partager</button>
+    <button class="action sec" id="rap-copier">Copier</button>
+    <button class="action sec" id="rap-imprimer">Imprimer ou PDF</button>
+    <button class="action sec" id="rap-fermer">Fermer</button>
+  </div></div>
+  <div id="rap-corps"><div class="wrap">
+    <div class="rap-tete"><h1 id="rap-titre"></h1><div class="rap-meta" id="rap-meta"></div></div>
+    <div id="rap-cle"></div><div id="rap-mesures"></div><div id="rap-cascade"></div>
+    <div id="rap-graph"></div><div id="rap-deciles"></div><div id="rap-faits"></div>
+    <div id="rap-invite"></div><div id="rap-pied"></div>
+  </div></div>
+</div>
+
+<script>
+const POP = {"source":"Drees, EIR 2020 tableau 5 (forme) recalée sur EACR 2024 ; queue modélisée par une loi de Pareto","annee_forme":2020,"annee_niveau":2024,"facteur_niveau":1.192,"effectif_total":16429118,"variantes":{"basse":{"valeur":5000.0,"moyenne":1918.9,"alpha":10.0,"q":[12.7,38.0,63.3,88.6,113.9,139.0,164.0,189.0,214.0,239.0,265.2,291.3,317.5,343.7,370.9,399.2,427.5,455.9,484.9,515.6,546.4,577.1,607.5,637.4,667.2,697.1,725.8,752.8,779.8,806.8,833.7,854.9,875.8,896.7,917.6,938.5,957.6,971.7,985.8,999.9,1014.1,1028.2,1042.3,1056.4,1070.5,1084.4,1098.2,1112.1,1125.9,1139.8,1153.6,1167.5,1181.3,1195.4,1210.0,1224.6,1239.3,1253.9,1268.6,1283.2,1297.9,1312.5,1326.4,1340.4,1354.4,1368.4,1382.4,1396.3,1410.3,1424.3,1438.0,1451.4,1464.8,1478.2,1491.6,1505.0,1518.4,1531.8,1545.2,1558.1,1570.9,1583.7,1596.4,1609.2,1622.0,1634.7,1647.5,1660.2,1672.9,1685.5,1698.0,1710.6,1723.1,1735.7,1748.2,1760.8,1773.3,1785.9,1798.8,1811.7,1824.7,1837.6,1850.6,1863.5,1876.5,1889.4,1902.4,1915.8,1929.5,1943.3,1957.1,1970.8,1984.6,1998.3,2012.1,2025.8,2040.3,2054.9,2069.4,2083.9,2098.5,2113.0,2127.6,2142.1,2157.3,2172.6,2188.0,2203.4,2218.8,2234.1,2249.5,2264.9,2281.2,2297.6,2313.9,2330.3,2346.6,2363.0,2379.4,2396.1,2413.1,2430.0,2446.9,2463.9,2480.8,2497.8,2517.0,2537.6,2558.2,2578.7,2599.3,2619.9,2643.1,2666.7,2690.4,2714.0,2737.7,2763.8,2790.6,2817.3,2844.0,2872.2,2903.1,2934.0,2964.9,2998.1,3033.7,3069.2,3105.4,3145.6,3185.8,3227.0,3273.3,3319.5,3369.5,3422.0,3477.3,3538.2,3601.8,3670.1,3746.3,3828.8,3920.6,4026.0,4143.3,4273.8,4425.5,4600.1,4813.3,5086.3,5309.0,5394.5,5448.7,5503.3,5558.6,5614.3,5670.7,5727.6,5785.1,5843.1,5901.8,5961.0,6020.8,6081.3,6142.3,6203.9,6266.2,6329.1,6392.6,6456.8,6521.6,6587.0,6653.1,6719.9,6787.3,6855.4,6924.2,6993.7,7063.9,7134.8,7206.4,7278.7,7351.8,7425.6,7500.1,7575.3,7651.4,7728.2,7805.7,7884.1,7963.2,8043.1,8123.8,8205.3,8287.7,8370.9,8454.9,8539.7,8625.4,8712.0,8799.4,8887.7,8976.9,9067.0,9158.0,9249.9,9342.7,9436.5,9531.2,9626.9],"w":[0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.001900772,0.001720134,0.001556663,0.001408728,0.001274851,0.001153697,0.001044057,0.000944836,0.000855044,0.000773786,0.00070025,0.000633703,0.00057348,0.00051898,0.000469659,0.000425026,0.000384634,0.000348081,0.000315001,0.000285065,0.000257974,0.000233458,0.000211272,0.000191194,0.000173024,0.000156581,0.0001417,0.000128234,0.000116047,0.000105019,9.5039e-05,8.6007e-05,7.7833e-05,7.0436e-05,6.3743e-05,5.7685e-05,5.2203e-05,4.7242e-05,4.2752e-05,3.8689e-05,3.5013e-05,3.1685e-05,2.8674e-05,2.5949e-05,2.3483e-05,2.1251e-05,1.9232e-05,1.7404e-05,1.575e-05,1.4253e-05,1.2899e-05,1.1673e-05,1.0564e-05,9.56e-06,8.651e-06,7.829e-06,7.085e-06,6.412e-06,5.802e-06,5.251e-06]},"centrale":{"valeur":5800.0,"moyenne":1936.3,"alpha":4.462,"q":[12.7,38.0,63.3,88.6,113.9,139.0,164.0,189.0,214.1,239.1,265.3,291.5,317.6,343.8,371.0,399.4,427.7,456.1,485.0,515.8,546.6,577.3,607.8,637.6,667.5,697.4,726.1,753.1,780.1,807.1,834.1,855.2,876.1,897.0,918.0,938.9,958.0,972.1,986.2,1000.3,1014.5,1028.6,1042.7,1056.8,1070.9,1084.8,1098.7,1112.5,1126.4,1140.2,1154.1,1168.0,1181.8,1195.8,1210.5,1225.1,1239.8,1254.4,1269.1,1283.7,1298.4,1313.0,1327.0,1341.0,1354.9,1368.9,1382.9,1396.9,1410.9,1424.9,1438.5,1451.9,1465.3,1478.7,1492.1,1505.6,1519.0,1532.4,1545.8,1558.8,1571.5,1584.3,1597.1,1609.8,1622.6,1635.4,1648.1,1660.9,1673.6,1686.1,1698.7,1711.3,1723.8,1736.4,1748.9,1761.5,1774.0,1786.6,1799.5,1812.4,1825.4,1838.3,1851.3,1864.2,1877.2,1890.1,1903.1,1916.5,1930.3,1944.1,1957.8,1971.6,1985.4,1999.1,2012.9,2026.6,2041.1,2055.7,2070.2,2084.8,2099.3,2113.9,2128.4,2143.0,2158.1,2173.5,2188.9,2204.2,2219.6,2235.0,2250.4,2265.8,2282.1,2298.5,2314.8,2331.2,2347.6,2363.9,2380.3,2397.1,2414.0,2431.0,2447.9,2464.9,2481.8,2498.8,2518.0,2538.6,2559.2,2579.8,2600.3,2620.9,2644.1,2667.8,2691.4,2715.1,2738.8,2764.9,2791.7,2818.4,2845.2,2873.4,2904.3,2935.2,2966.1,2999.3,3034.9,3070.4,3106.6,3146.8,3187.1,3228.3,3274.5,3320.8,3370.8,3423.4,3478.7,3539.6,3603.2,3671.6,3747.7,3830.3,3922.1,4027.6,4144.9,4275.5,4427.2,4601.9,4815.2,5088.3,5311.1,5433.0,5556.0,5681.8,5810.4,5941.9,6076.4,6213.9,6354.5,6498.4,6645.5,6795.9,6949.7,7107.0,7267.9,7432.4,7600.6,7772.6,7948.5,8128.5,8312.4,8500.6,8693.0,8889.7,9091.0,9296.7,9507.1,9722.3,9942.4,10167.4,10397.6,10632.9,10873.6,11119.7,11371.4,11628.8,11892.0,12161.1,12436.4,12717.9,13005.7,13300.1,13601.2,13909.0,14223.8,14545.8,14875.0,15211.7,15556.0,15908.1,16268.2,16636.4,17012.9,17398.0,17791.8,18194.5,18606.3,19027.5,19458.1,19898.6],"w":[0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.001900772,0.001720134,0.001556663,0.001408728,0.001274851,0.001153697,0.001044057,0.000944836,0.000855044,0.000773786,0.00070025,0.000633703,0.00057348,0.00051898,0.000469659,0.000425026,0.000384634,0.000348081,0.000315001,0.000285065,0.000257974,0.000233458,0.000211272,0.000191194,0.000173024,0.000156581,0.0001417,0.000128234,0.000116047,0.000105019,9.5039e-05,8.6007e-05,7.7833e-05,7.0436e-05,6.3743e-05,5.7685e-05,5.2203e-05,4.7242e-05,4.2752e-05,3.8689e-05,3.5013e-05,3.1685e-05,2.8674e-05,2.5949e-05,2.3483e-05,2.1251e-05,1.9232e-05,1.7404e-05,1.575e-05,1.4253e-05,1.2899e-05,1.1673e-05,1.0564e-05,9.56e-06,8.651e-06,7.829e-06,7.085e-06,6.412e-06,5.802e-06,5.251e-06]},"haute":{"valeur":7000.0,"moyenne":1962.3,"alpha":2.8,"q":[12.7,38.0,63.4,88.7,114.1,139.2,164.2,189.2,214.3,239.3,265.6,291.8,318.0,344.2,371.4,399.8,428.2,456.6,485.6,516.4,547.2,578.0,608.4,638.3,668.2,698.1,726.9,753.9,780.9,808.0,835.0,856.1,877.1,898.0,919.0,939.9,959.0,973.2,987.3,1001.4,1015.6,1029.7,1043.8,1057.9,1072.1,1086.0,1099.9,1113.7,1127.6,1141.5,1155.3,1169.2,1183.1,1197.1,1211.8,1226.5,1241.1,1255.8,1270.5,1285.1,1299.8,1314.4,1328.4,1342.4,1356.4,1370.4,1384.4,1398.4,1412.4,1426.4,1440.1,1453.5,1466.9,1480.4,1493.8,1507.2,1520.6,1534.0,1547.4,1560.5,1573.2,1586.0,1598.8,1611.6,1624.4,1637.1,1649.9,1662.7,1675.4,1688.0,1700.5,1713.1,1725.7,1738.3,1750.8,1763.4,1776.0,1788.5,1801.4,1814.4,1827.4,1840.3,1853.3,1866.3,1879.2,1892.2,1905.2,1918.6,1932.4,1946.2,1960.0,1973.7,1987.5,2001.3,2015.1,2028.9,2043.4,2057.9,2072.5,2087.0,2101.6,2116.2,2130.7,2145.3,2160.4,2175.8,2191.2,2206.6,2222.0,2237.4,2252.8,2268.2,2284.6,2301.0,2317.4,2333.7,2350.1,2366.5,2382.9,2399.7,2416.6,2433.6,2450.6,2467.5,2484.5,2501.5,2520.8,2541.4,2562.0,2582.6,2603.2,2623.8,2647.0,2670.7,2694.4,2718.1,2741.7,2767.9,2794.7,2821.5,2848.3,2876.5,2907.4,2938.4,2969.3,3002.6,3038.2,3073.8,3110.0,3150.3,3190.5,3231.8,3278.1,3324.4,3374.5,3427.1,3482.4,3543.4,3607.1,3675.6,3751.8,3834.4,3926.4,4032.0,4149.5,4280.1,4432.0,4606.9,4820.4,5093.9,5316.9,5478.2,5677.1,5883.2,6096.9,6318.2,6547.6,6785.3,7031.7,7287.0,7551.6,7825.7,8109.9,8404.3,8709.4,9025.7,9353.3,9692.9,10044.9,10409.6,10787.5,11179.2,11585.0,12005.7,12441.6,12893.3,13361.4,13846.5,14349.2,14870.2,15410.1,15969.6,16549.4,17150.3,17772.9,18418.2,19086.9,19779.9,20498.1,21242.3,22013.5,22812.8,23641.1,24499.4,25388.9,26310.7,27265.9,28255.9,29281.8,30344.9,31446.7,32588.4,33771.6,34997.7,36268.4,37585.2,38949.8,40363.9,41829.4,43348.1],"w":[0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.005158153,0.001900772,0.001720134,0.001556663,0.001408728,0.001274851,0.001153697,0.001044057,0.000944836,0.000855044,0.000773786,0.00070025,0.000633703,0.00057348,0.00051898,0.000469659,0.000425026,0.000384634,0.000348081,0.000315001,0.000285065,0.000257974,0.000233458,0.000211272,0.000191194,0.000173024,0.000156581,0.0001417,0.000128234,0.000116047,0.000105019,9.5039e-05,8.6007e-05,7.7833e-05,7.0436e-05,6.3743e-05,5.7685e-05,5.2203e-05,4.7242e-05,4.2752e-05,3.8689e-05,3.5013e-05,3.1685e-05,2.8674e-05,2.5949e-05,2.3483e-05,2.1251e-05,1.9232e-05,1.7404e-05,1.575e-05,1.4253e-05,1.2899e-05,1.1673e-05,1.0564e-05,9.56e-06,8.651e-06,7.829e-06,7.085e-06,6.412e-06,5.802e-06,5.251e-06]}}};
+
+
+/* Barèmes 2026 — identiques au moteur Python du projet */
+const P = {
+  ir:{tranches:[[11600,0],[29579,.11],[84577,.30],[181917,.41],[Infinity,.45]],
+      decote:{taux:.4525,seul:897,seuilSeul:1982},
+      abattement:{taux:.10,min:454,max:4439}, nr:61},
+  csg:{taux:{exonere:[0,0],reduit:[.038,.038],median:[.066,.042],plein:[.083,.059]},
+       crds:.005, casa:.003, seuils:{exo:13048,reduit:17057,median:26472}},
+  aspa:{seul:12523.14}
+};
+
+const DEFICIT_COR = 5.1e9;
+
+/* Seuil de pauvreté monétaire 2024, personne seule : Insee, juillet 2026.
+   Taux de pauvreté des retraités la même année : 10,4 %. */
+const SEUIL_PAUVRETE = 1337, TAUX_PAUVRETE_RETRAITES = 0.104;
+   // COR, rapport annuel juin 2026, déficit 2025
+
+const eur=n=>Math.round(n).toLocaleString('fr-FR')+' €';
+
+const md=n=>(n/1e9).toLocaleString('fr-FR',{minimumFractionDigits:1,maximumFractionDigits:1})+' Md€';
+
+const mdS=n=>(n>=0?'+':'−')+md(Math.abs(n));
+
+
+function trancheCsg(r){const s=P.csg.seuils;
+  return r<=s.exo?'exonere':r<=s.reduit?'reduit':r<=s.median?'median':'plein';}
+
+function prelev(pension,rfr){const t=trancheCsg(rfr);
+  if(t==='exonere')return{csg:0,ded:0,crds:0,casa:0};
+  const[tx,dx]=P.csg.taux[t];
+  return{csg:pension*tx,ded:pension*dx,
+         crds:pension*P.csg.crds,
+         casa:t==='reduit'?0:pension*P.csg.casa};}
+
+function impot(pens,ded){const a=P.ir.abattement;
+  const ab=Math.min(Math.max(pens*a.taux,Math.min(a.min,pens)),a.max);
+  let x=Math.max(0,pens-ab-ded), i=0, bas=0;
+  for(const[h,t]of P.ir.tranches){if(x<=bas)break;i+=(Math.min(x,h)-bas)*t;bas=h;}
+  const d=P.ir.decote;
+  if(i<d.seuilSeul)i=Math.max(0,i-Math.max(0,d.seul-d.taux*i));
+  return i<P.ir.nr?0:i;}
+
+/* Référence = droit en vigueur ; réforme = paramètres pilotés.
+   Comparer les deux avec les mêmes paramètres annulerait l'effet du levier. */
+const ASPA_REF=1043.59;
+
+/* CALAGE. Le modèle ne connaît que la pension individuelle. Il ignore les
+   ressources du ménage, la condition d'âge de 65 ans et le non-recours — et
+   compte donc bien trop d'allocataires. Réel fin 2024 : 754 460 bénéficiaires.
+   Le facteur ci-dessous ramène le modèle sur cette cible observée. */
+const ASPA_REEL_BENEF=754460, ASPA_CALAGE=0.209;
+
+const aspaRef =r=>Math.max(0,ASPA_REF*12-r)*ASPA_CALAGE;
+
+const aspaRef2=r=>Math.max(0,E.aspaMontant*12-r)*ASPA_CALAGE*E.aspaRecours;
+
+
+/* Effet instantané des prélèvements sur les finances publiques.
+   Il est déterministe : il ne dépend pas de la distribution des pensions,
+   donc pas de l'hypothèse sur les hautes pensions. Il s'ajoute tel quel à
+   chaque borne de la fourchette. */
+function effetPrelevements(){
+  return (PJ.cotSal+PJ.cotPat)*ELAST.mdParPointVieillessePlafonnee
+       + PJ.csg*ELAST.mdParPointCSG;
+}
+
+/* --- état --- */
+let E={taux:Array(10).fill(0), plafond:0, plancher:0, variante:'centrale',
+       aspaMontant:1043.59, aspaRecours:1.00};
+
+
+function quantiles(v){return POP.variantes[v].q;}
+
+function poidsRel(v){return POP.variantes[v].w;}
+
+function seuils(q,w){                  /* quantiles pondérés */
+  if(!w) throw new Error("seuils() exige les poids : les points de grille ne "
+    +"représentent pas le même nombre de personnes.");
+  const s=[]; let d=1, cum=0;
+  for(let i=0;i<q.length && d<=9;i++){
+    const c0=cum; cum+=w[i];
+    while(d<=9 && cum>=d/10){
+      const f=(d/10-c0)/w[i];
+      s.push(q[i]+(i+1<q.length?(q[i+1]-q[i])*f:0)); d++;
+    }
+  }
+  while(s.length<9)s.push(q[q.length-1]);
+  return s;}
+
+
+function applique(p,sl,taux){                 /* barème marginal par tranches de décile */
+  const b=[0,...sl,1e12];let r=0;
+  for(let d=0;d<10;d++) r+=Math.max(0,Math.min(p,b[d+1])-b[d])*(1+taux[d]);
+  return r;
+}
+
+
+function chiffrer(sig){
+  const q=quantiles(sig), wr=poidsRel(sig), sl=seuils(q,wr);
+  let brute=0,csg=0,crds=0,casa=0,ir=0,asp=0,benefAv=0,benefAp=0,pauvAv=0,pauvAp=0;
+  let parD=Array.from({length:10},()=>({av:0,ap:0,n:0,net:0,netAv:0,netAp:0,
+      mPensAv:0,mPensAp:0,mContAv:0,mContAp:0,mAspaAv:0,mAspaAp:0,eff:0}));
+  let cum=0;
+  for(let i=0;i<q.length;i++){
+    const p=q[i], w=wr[i]*POP.effectif_total;
+    /* ORDRE DES OPÉRATIONS, dans cet ordre exact :
+       1. variations par décile, au barème marginal
+       2. plafond, appliqué à la pension DÉJÀ réduite
+       3. plancher, opposable au résultat de tout ce qui précède
+       Conséquence : plafond et réductions de déciles ne s'additionnent pas.
+       Le plafond mord sur une distribution déjà écrêtée. */
+    let p2=applique(p,sl,E.taux);
+    if(E.plafond>0)p2=Math.min(p2,E.plafond);
+    if(E.plancher>0)p2=Math.max(p2,E.plancher);
+    const a1=p*12, a2=p2*12;
+    const v1=prelev(a1,a1), v2=prelev(a2,a1);   /* RFR figé : décalage de 2 ans */
+    const i1=impot(a1,v1.ded), i2=impot(a2,v2.ded);
+    const s1=aspaRef(a1), s2=aspaRef2(a2);
+    brute+=(a1-a2)*w; csg+=(v1.csg-v2.csg)*w; crds+=(v1.crds-v2.crds)*w;
+    casa+=(v1.casa-v2.casa)*w; ir+=(i1-i2)*w; asp+=(s2-s1)*w;
+    if(s1>0)benefAv+=w*ASPA_CALAGE; if(s2>0)benefAp+=w*ASPA_CALAGE;
+    const n1=a1-v1.csg-v1.crds-v1.casa-i1+s1, n2=a2-v2.csg-v2.crds-v2.casa-i2+s2;
+    if(n1/12<SEUIL_PAUVRETE)pauvAv+=w;
+    if(n2/12<SEUIL_PAUVRETE)pauvAp+=w;
+    const d=Math.min(9,Math.floor((cum+wr[i]/2)*10)); cum+=wr[i];
+    /* TOUT est pondéré par w : les points de grille ne représentent pas le
+       même nombre de personnes depuis l'introduction de la queue de Pareto. */
+    parD[d].av+=p*w; parD[d].ap+=p2*w; parD[d].n++;
+    parD[d].netAv+=n1*w/12; parD[d].netAp+=n2*w/12; parD[d].net+=(n1-n2)*w;
+    parD[d].eff+=w;
+    parD[d].mPensAv+=a1*w;                 parD[d].mPensAp+=a2*w;
+    parD[d].mContAv+=(v1.csg+v1.crds+v1.casa+i1)*w;
+    parD[d].mContAp+=(v2.csg+v2.crds+v2.casa+i2)*w;
+    parD[d].mAspaAv+=s1*w;                 parD[d].mAspaAp+=s2*w;
+  }
+  const soc=csg+crds+casa;
+  return {brute,csg,crds,casa,soc,ir,aspa:asp,benefAv,benefAp,pauvAv,pauvAp,
+          nette:brute-soc-ir-asp,parD,seuils:sl};
+}
+
+
+
+/* =====================================================================
+   ÂGES DE DÉPART — droit en vigueur
+   Source : loi du 14 avril 2023, suspendue pour les générations 1964 à 1968
+   par l'article 105 de la LFSS 2026. Grille reconstituée dans le module
+   `baseline` du projet.
+   ===================================================================== */
+const AGES = {
+  legalParGeneration:[
+    ["1963",         62*12+9],
+    ["1964",         62*12+9],
+    ["1965, 1er trim.", 62*12+9],
+    ["1965, dès avril", 63*12],
+    ["1966",         63*12+3],
+    ["1967",         63*12+6],
+    ["1968",         63*12+9],
+    ["1969 et après",64*12]
+  ],
+  cible:64*12,                    /* génération 1969 et suivantes */
+  tauxPleinAutomatique:67*12,     /* inchangé par toutes les réformes */
+  effectifRegimeGeneral:63*12+7,  /* âge conjoncturel 2024, Drees EACR */
+  effectifFPE:63*12+2,
+  effectif2035:64*12+4            /* projection COR : 64,3 ans en 2035 */
+};
+
+function ageTexte(mois){
+  const a=Math.floor(mois/12), m=Math.round(mois%12);
+  return m===0 ? a+' ans' : a+' ans '+m+' mois';
+}
+
+
+/* =====================================================================
+   PROJECTION — perturbation de la trajectoire du COR (juin 2026)
+   ===================================================================== */
+const COR = {
+  source:"COR, rapport annuel de juin 2026",
+  annees:[2025,2030,2035,2040,2045,2050,2060,2070],
+  /* Dépenses et ressources en points de PIB. Points publiés :
+     dépenses 14,1 (2025) / 14,2 (2045) / 15,3 (2070) ;
+     ressources 13,9 (2025) / 13,4 (2040) / 12,9 (2070) ;
+     solde -0,2 (2030) / -0,6 (2040) / -0,9 (2045) / -1,2 (2050) / -2,4 (2070).
+     Les années intermédiaires sont interpolées. */
+  dep:[14.1,14.1,14.1,14.0,14.2,14.4,14.8,15.3],
+  res:[13.9,13.9,13.7,13.4,13.3,13.2,13.0,12.9],
+  pib2025:2900e9,
+  /* DÉCOMPOSITION DE LA CROISSANCE DU PIB NOMINAL
+       PIB en valeur = productivité + emploi + inflation
+
+     OBSERVÉ EN 2025 (Insee, comptes de la Nation) :
+       PIB en volume  +0,8 %
+       déflateur      +1,1 %
+       PIB en valeur  +2,0 %
+
+     HYPOTHÈSES DE LONG TERME retenues ici :
+       emploi     0,0 %  — la population de 20 à 64 ans se contracte selon
+                           les projections Insee 2026, la hausse du taux
+                           d'emploi des seniors compensant à peu près
+       inflation  1,75 % — horizon de moyen terme, proche de la cible de la
+                           banque centrale. L'inflation observée en 2026 est
+                           supérieure du fait du choc énergétique.
+
+     À 0,7 % de productivité, cela donne 2,45 % de croissance nominale.
+     Une version antérieure de ce modèle retenait 3,2 %, valeur ajustée à
+     rebours pour retomber sur les montants du COR et jamais sourcée. Elle
+     surestimait le PIB de 2070 de près de 40 %. */
+  emploi:0.000, inflation:0.0175
+};
+
+/* Élasticités, chacune documentée dans la note de méthode */
+const ELAST = {
+  /* Le décalage d'âge est décomposé, non abattu forfaitairement.
+     Voir DEVENIR ci-dessous. */
+  fluxAnnuel:830502, pensionEntree:1689,
+  /* VALEUR DU POINT — chaque prélèvement a SA PROPRE assiette.
+     Source : Sécurité sociale, « Valeur du point de CSG et des points de
+     cotisation du régime général », données 2024.
+
+       point de CSG affecté au régime général ....... 17,6 Md€
+       point de cotisation vieillesse déplafonnée .... 7,1 Md€
+       point de cotisation vieillesse plafonnée ...... 6,2 Md€
+
+     L'écart entre plafonnée et déplafonnée tient au plafond : les cotisations
+     vieillesse sont pour l'essentiel calculées dans la limite du PASS. Celui
+     de la CSG tient à son assiette bien plus large : les revenus d'activité
+     n'en représentent que 67 %, le reste venant des revenus de remplacement
+     (21,5 %), du patrimoine et des placements (10,9 %).
+
+     CORRECTION IMPORTANTE. Une version antérieure de ce modèle retenait un
+     rendement uniforme de 0,50 point de PIB par point, déduit d'une assiette
+     supposée de 50 points de PIB. L'assiette réelle des cotisations vieillesse
+     est de 620 Md€, soit 21 % du PIB. Le rendement était donc surestimé d'un
+     facteur 2,3, et l'efficacité du levier cotisations avec lui. */
+  mdParPointVieillessePlafonnee:6.2e9,
+  mdParPointVieillesseDeplafonnee:7.1e9,
+  mdParPointCSG:17.6e9,
+  /* Montée en charge d'un décalage d'âge : un trimestre par génération,
+     soit quatre ans par année de décalage. */
+  anneesParAnDecalage:4
+};
+
+
+function formatAge(a){
+  /* Affichage en années et trimestres, comme dans le débat public français. */
+  if(a===0) return '0';
+  const m=Math.round(a*12), an=Math.floor(m/12), mo=m%12;
+  if(an===0) return '+'+mo+' mois';
+  const partAn = an===1?'+1 an':'+'+an+' ans';
+  return mo===0 ? partAn : partAn+' '+mo+'m';
+}
+
+
+function croissanceNominale(){return PJ.prod + COR.emploi + COR.inflation;}
+
+function pib(an){return COR.pib2025*Math.pow(1+croissanceNominale(),an-2025);}
+
+function interp(an,serie){
+  const A=COR.annees;
+  if(an<=A[0])return serie[0];
+  if(an>=A[A.length-1])return serie[serie.length-1];
+  for(let i=0;i<A.length-1;i++) if(an<=A[i+1])
+    return serie[i]+(serie[i+1]-serie[i])*(an-A[i])/(A[i+1]-A[i]);
+  return serie[serie.length-1];
+}
+
+
+/* =====================================================================
+   DEVENIR DE LA COHORTE REPORTÉE
+   Que deviennent les gens qui, du fait d'un décalage d'âge, ne partent pas
+   en retraite ? Le point faible de tout chiffrage d'un recul de l'âge.
+
+   SOURCES
+     Cour des comptes, rapport de février 2025 : de 2010 à 2020, l'âge effectif
+       de départ a progressé de 2,1 ans mais la durée passée en emploi de
+       1 an et 7 mois seulement — soit environ trois quarts du décalage.
+     IPP, sur la réforme de 2010 pour les non éligibles aux carrières longues :
+       +20 à 25 points d'emploi entre 60 et 62 ans, mais aussi +12 à 15 points
+       de chômage indemnisé.
+     Dubois et Koubi (2017) : à 60 ans, la probabilité d'être en emploi passe
+       de 33 à 49 %, celle de non-emploi de 17 à 26 %. Soit, sur ceux qui ne
+       partent plus en retraite, environ 64 % vers l'emploi.
+     Drees, remise au COR d'octobre 2016 : le report de 60 à 62 ans représente
+       1,2 à 1,5 Md€ de surcoût pour l'invalidité et 600 M€ pour les minima
+       sociaux. À 60 ans, près d'une personne sur trois n'est ni en emploi ni
+       à la retraite.
+
+   La fourchette de la littérature pour la part restant en emploi va de 62 à
+   75 %. La valeur par défaut retenue ici est de 65 %.
+   ===================================================================== */
+const DEVENIR = {
+  partContrainte:0.70,      /* part du flux effectivement contrainte par l'âge
+                               légal : les départs au taux plein automatique à
+                               67 ans et une partie des carrières longues y
+                               échappent */
+  salaireSenior:2600,       /* salaire brut mensuel moyen en fin de carrière */
+  tauxCotisationRetraite:0.28,
+  allocationSubstitution:1150  /* chômage, invalidité, minima : moyenne
+                                  mensuelle des personnes indemnisées */
+};
+
+
+let PJ={idx:0, idxDuree:5, age:0, duree:0, cotSal:0, cotPat:0, csg:0,
+        emploi:0.65, prod:0.007, reprisePilotage:true};
+
+/* Compatibilité : PJ.cot reste la somme des deux parts. */
+Object.defineProperty(PJ,'cot',{get(){return this.cotSal+this.cotPat;},
+  set(v){const t=this.cotSal+this.cotPat;
+    if(t===0){this.cotSal=v*0.404;this.cotPat=v*0.596;}
+    else{this.cotSal=v*this.cotSal/t;this.cotPat=v*this.cotPat/t;}}});
+
+let EFFET_PILOTAGE=0;
+      /* effet du volet pilotage, en points de PIB */
+
+const PROD_REF=0.007;
+      /* hypothèse centrale du COR de juin 2026 */
+/* SENSIBILITÉ À LA PRODUCTIVITÉ, calée sur les variantes publiées par le COR :
+   dépenses 2070 de 16,1 % du PIB à 0,4 % de productivité et 14,5 % à 1,0 %,
+   contre 15,3 % en référence. Le coefficient reproduit ces trois points au
+   dixième près.
+   Interprétation : seuls 39 % de la dépense se comportent comme un flux
+   indexé sur les prix face à un PIB qui croît avec la productivité. Le reste
+   suit les salaires, les pensions nouvellement liquidées étant calculées sur
+   des salaires portés au compte. Une formule à 100 % — celle que ce modèle
+   utilisait initialement — surestimait la sensibilité de 2,5 fois. */
+/* TAUX DE COTISATION RETRAITE 2026, tranche 1 (source : barèmes Urssaf et
+   Agirc-Arrco). Salarial : vieillesse plafonnée 6,90 + déplafonnée 0,40 +
+   Agirc-Arrco 3,15 + CEG 0,86 = 11,31 %. Patronal : 8,55 + 2,11 + 4,72 +
+   1,29 = 16,67 %. Total 27,98 %, dont près de 60 % à la charge de
+   l'employeur. */
+const TAUX_SALARIAL=11.31, TAUX_PATRONAL=16.67;
+
+
+/* =====================================================================
+   DURÉE D'ASSURANCE REQUISE
+   Autre moitié de la réforme de 2023, et levier d'incidence très différente
+   de l'âge : il frappe les carrières incomplètes, pas tout le monde.
+
+   CONDITIONS DE LIQUIDATION, CNAV, flux 2024 (Drees, EACR table B),
+   sur 1 296 692 nouveaux retraités :
+       décote ................................. 13,4 %
+       départ à l'âge d'annulation (67 ans) ... 10,6 %
+       autres départs au taux plein ........... 57,1 %
+       surcote ................................ 18,9 %
+
+   Un allongement de la durée requise ne touche PAS les 10,6 % qui partent à
+   67 ans : à cet âge le taux plein est acquis quelle que soit la durée. Il
+   touche les 89,4 % restants — soit en les faisant travailler plus longtemps,
+   soit en creusant leur décote, soit en rognant leur surcote.
+
+   ASYMÉTRIE ENTRE SEXES, mesurée sur les mêmes données : 12,6 % des femmes
+   partent à 67 ans contre 8,4 % des hommes. L'âge d'annulation est le refuge
+   des carrières incomplètes ; allonger la durée y pousse davantage de femmes,
+   qui y perdent des années de pension sans subir de décote.
+
+   RENDEMENT RETENU. Un trimestre de durée en plus équivaut à un quart d'année
+   de décalage appliqué aux seuls 89,4 % concernés, soit 0,22 année-âge. C'est
+   une équivalence de premier ordre : elle suppose que l'effet passe par un
+   report de départ, alors qu'une part le subit en pension moindre — décote et
+   proratisation. Les deux produisent une économie du même ordre, mais la
+   seconde la fait porter durablement sur le retraité.
+   ===================================================================== */
+const DUREE = {
+  requiseActuelle:172,          /* trimestres, génération 1965 et suivantes */
+  partConcernee:0.894,          /* hors départs à l'âge d'annulation */
+  equivalenceAnneeAge:0.25*0.894,
+  decoteParTrimestre:0.0125     /* 1,25 % par trimestre manquant */
+};
+
+
+const TAUX_COTISATION_ACTUEL=TAUX_SALARIAL+TAUX_PATRONAL;
+
+const BETA_PROD=0.39;
+
+/* TAUX DE REMPLACEMENT. Contrepartie indispensable du tableau précédent :
+   si la part des retraites dans le PIB recule quand la productivité monte,
+   c'est uniquement parce que les pensions décrochent des salaires.
+   Calé sur le COR : 55 % en 2025, 45 % en 2070 sous 0,7 % de productivité.
+   Le coefficient de 0,639 intègre l'effet noria — les générations nouvelles
+   ont de meilleures carrières, ce qui freine la baisse. */
+const TAUX_REMPL_2025=55, GAMMA_REMPL=0.639;
+
+const tauxRemplacement=(an,prod)=>
+  TAUX_REMPL_2025*Math.pow(1+prod, -GAMMA_REMPL*Math.max(0,an-2025));
+
+const COR_VARIANTES={0.004:16.1, 0.007:15.3, 0.010:14.5};
+
+
+function effetAge(annees){
+  /* Renvoie la décomposition, en milliards d'euros par an, à pleine montée
+     en charge, pour `annees` années de décalage. */
+  const n = ELAST.fluxAnnuel * DEVENIR.partContrainte * annees;
+  const eco = n * ELAST.pensionEntree * 12;
+  const enEmploi = n * PJ.emploi, horsEmploi = n * (1 - PJ.emploi);
+  /* Ceux qui travaillent cotisent ; ceux qui ne travaillent pas sont indemnisés.
+     Une part des non-employés n'est indemnisée par rien : on retient 70 %. */
+  const cotis = enEmploi * DEVENIR.salaireSenior * 12 * DEVENIR.tauxCotisationRetraite;
+  const subst = horsEmploi * 0.70 * DEVENIR.allocationSubstitution * 12;
+  return {personnes:n, eco, cotis, subst, net:eco + cotis - subst};
+}
+
+
+function trajectoire(){
+  const out=[];
+  let cumule=0;
+  for(let an=2025;an<=2070;an++){
+    const depRef=interp(an,COR.dep), resRef=interp(an,COR.res);
+    /* PRODUCTIVITÉ. Les pensions sont indexées sur les prix, les ressources
+       sur les salaires. Une productivité plus forte fait donc reculer la part
+       des pensions dans le PIB, sans que rien ne soit décidé. C'est le
+       paramètre le plus puissant du système, et le seul sur lequel un
+       décideur n'a pas de prise directe. */
+    const kProd=Math.pow((1+PROD_REF)/(1+PJ.prod), BETA_PROD*Math.max(0,an-2025));
+    /* Sous-indexation : effet cumulatif et multiplicatif à partir de 2027 */
+    /* SOUS-INDEXATION SUR UNE DURÉE FINIE.
+       Elle creuse un écart pendant `idxDuree` années, puis l'indexation
+       normale reprend : le niveau reste durablement plus bas, mais l'écart
+       cesse de se creuser. Une version antérieure appliquait la mesure sur
+       toute la période de projection, ce qui rendait les soldes 2070
+       spectaculaires et trompeurs. */
+    const t=Math.min(Math.max(0,an-2026), PJ.idxDuree);
+    const dep1=depRef*kProd*Math.pow(1-PJ.idx,t);
+    /* Décalage de l'âge : montée en charge linéaire */
+    /* Montée en charge : un trimestre par génération, dans les deux sens. */
+    const pleine=Math.abs(PJ.age+PJ.duree*DUREE.equivalenceAnneeAge)*ELAST.anneesParAnDecalage;
+    const part=pleine>0?Math.min(1,Math.max(0,(an-2026)/pleine)):0;
+    /* Le gain d'un décalage d'âge est exprimé en POINTS DE PIB, constants
+       dans le temps : pensions et PIB croissent ensemble. Le rapporter à un
+       montant en euros de 2024 divisé par le PIB de l'année le ferait
+       s'évaporer mécaniquement — de 0,45 point en 2027 à 0,11 en 2070. */
+    /* La durée d'assurance est convertie en équivalent années d'âge, sur la
+       part de la population qu'elle peut atteindre. */
+    const ageEquiv = PJ.age + PJ.duree*DUREE.equivalenceAnneeAge;
+    const eff=Math.abs(ageEquiv)>1e-9?effetAge(ageEquiv):null;
+    const gainAge=eff? eff.net/COR.pib2025*100*part : 0;
+    const dep2=dep1-gainAge;
+    /* Volet pilotage : les mesures sur les pensions actuelles, converties en
+       points de PIB et supposées constantes en proportion. */
+    const dep3=dep2-(PJ.reprisePilotage && an>=2027 ? EFFET_PILOTAGE : 0);
+    /* Cotisations : effet immédiat, part salariale atténuée par le retour d'impôt */
+    /* Rendement converti en points de PIB, sur la base du PIB de référence :
+       les assiettes croissent comme le PIB, la part reste donc constante. */
+    const ptCot=ELAST.mdParPointVieillessePlafonnee/COR.pib2025*100;
+    const ptCSG=ELAST.mdParPointCSG/COR.pib2025*100;
+    const res1=resRef + (PJ.cotSal+PJ.cotPat)*ptCot + PJ.csg*ptCSG;
+    const solde=res1-dep3;
+    cumule+=solde;
+    out.push({an,depRef,resRef,dep:dep3,res:res1,
+              solde, soldeRef:resRef-depRef, cumule,
+              niveauPension:Math.pow(1-PJ.idx,t)});
+  }
+  return out;
+}
+
+
+/* =====================================================================
+   REPÈRES DE COMPARAISON — budget de l'État 2026
+   Sources : rapports du Sénat sur le projet de loi de finances pour 2026 ;
+   ministère de la Justice ; Insee.
+   ===================================================================== */
+const REPERES = {
+  justice:10.8e9,             /* mission Justice, crédits de paiement 2026 */
+  ecole:64.5e9,               /* Enseignement scolaire, hors CAS Pensions */
+  detteEtat:58.0e9,           /* charge de la dette de l'État en 2026 */
+  hausseDefense:6.7e9,        /* hausse des crédits Défense en 2026 */
+  penitentiaire:5.5e9,        /* administration pénitentiaire, CP 2026 */
+  deficitRetraites:5.1e9,     /* solde du système de retraite en 2025, COR */
+  dettePublique:3416e9,       /* dette publique, fin septembre 2025 */
+  pointCotisation:0.50        /* un point de cotisation = 0,50 point de PIB */
+};
+
+
+function etatCourant(){
+  return {taux:[...E.taux], plafond:E.plafond, plancher:E.plancher,
+          aspaMontant:E.aspaMontant, aspaRecours:E.aspaRecours,
+          idx:PJ.idx, idxDuree:PJ.idxDuree, age:PJ.age,
+          cotSal:PJ.cotSal, cotPat:PJ.cotPat, csg:PJ.csg};
+}
+
+function restaurer(o){
+  E.taux=[...o.taux]; E.plafond=o.plafond; E.plancher=o.plancher;
+  E.aspaMontant=o.aspaMontant; E.aspaRecours=o.aspaRecours;
+  PJ.idx=o.idx; PJ.idxDuree=o.idxDuree; PJ.age=o.age;
+  PJ.cotSal=o.cotSal; PJ.cotPat=o.cotPat; PJ.csg=o.csg;
+}
+
+function appliquerDose(d){
+  E.taux=d.taux?[...d.taux]:Array(10).fill(0);
+  E.plafond=d.plafond||0; E.plancher=0;
+  E.aspaMontant=1043.59; E.aspaRecours=1;
+  PJ.idx=d.idx||0; PJ.age=d.age||0;
+  PJ.cotSal=d.cotSal||0; PJ.cotPat=d.cotPat||0; PJ.csg=d.csg||0;
+}
+
+
+
+/* =====================================================================
+   RÉGIMES ET AUTORITÉ DE DÉCISION
+   Masses de pensions de droit direct versées en 2024, par caisse.
+   Source : Drees, EACR table A-Cadrage, effectifs × pension moyenne × 12.
+
+   POURQUOI LES MASSES ET NON LES EFFECTIFS. Un polypensionné apparaît dans
+   plusieurs caisses : la somme des effectifs donne 38,9 millions pour
+   17,3 millions de retraités réels. Les masses, elles, s'additionnent
+   correctement — 335 Md€, à comparer aux 342 Md€ tous régimes.
+
+   AUTORITÉ. C'est la dimension que le chiffrage seul ne donne pas :
+     loi          le Parlement décide, par la loi de financement
+     paritaire    les partenaires sociaux décident, par accord
+     employeur    l'État ou les collectivités, en tant qu'employeurs
+   ===================================================================== */
+const REGIMES=[
+  {nom:"CNAV",                  masse:137.5e9, aut:"loi",       plafonne:true},
+  {nom:"Agirc-Arrco",           masse: 83.3e9, aut:"paritaire", plafonne:false},
+  {nom:"Fonction publique d'État, civils", masse:46.1e9, aut:"employeur", plafonne:false},
+  {nom:"CNRACL",                masse: 24.6e9, aut:"employeur", plafonne:false},
+  {nom:"Fonction publique d'État, militaires", masse:8.6e9, aut:"employeur", plafonne:false},
+  {nom:"MSA salariés",          masse:  6.1e9, aut:"loi",       plafonne:true},
+  {nom:"MSA exploitants",       masse:  5.4e9, aut:"loi",       plafonne:true},
+  {nom:"CNIEG",                 masse:  5.2e9, aut:"loi",       plafonne:false},
+  {nom:"SNCF",                  masse:  4.6e9, aut:"loi",       plafonne:false},
+  {nom:"Ircantec",              masse:  3.8e9, aut:"paritaire", plafonne:false},
+  {nom:"SSI complémentaire",    masse:  2.1e9, aut:"loi",       plafonne:false},
+  {nom:"Autres régimes",        masse:  7.9e9, aut:"loi",       plafonne:false}
+];
+
+const AUTORITES={
+  loi:{lib:"Loi de financement", det:"le Parlement décide"},
+  paritaire:{lib:"Accord paritaire", det:"les partenaires sociaux décident"},
+  employeur:{lib:"Employeur public", det:"budget de l'État ou des collectivités"}
+};
+
+/* La CNAV verse au maximum environ 2 000 € brut par mois : au-delà, la pension
+   provient des complémentaires ou des régimes intégrés de la fonction publique.
+   Toute mesure visant le haut de la distribution épargne donc largement la
+   CNAV, ce qu'une imputation proportionnelle masquerait complètement. */
+const PLAFOND_CNAV=2000;
+
+
+function repartitionRegimes(cibleHaute){
+  /* cibleHaute : part de l'effet portant sur les pensions au-dessus du
+     plafond CNAV. Les caisses plafonnées en sont exclues à due proportion. */
+  const masseTot=REGIMES.reduce((a,r)=>a+r.masse,0);
+  const masseNonPlaf=REGIMES.filter(r=>!r.plafonne).reduce((a,r)=>a+r.masse,0);
+  return REGIMES.map(r=>{
+    const partBasse=r.masse/masseTot;
+    const partHaute=r.plafonne?0:r.masse/masseNonPlaf;
+    return {...r, part: partBasse*(1-cibleHaute) + partHaute*cibleHaute};
+  });
+}
+
+function partHauteScenario(){
+  /* Part de l'effet portant sur la fraction de pension supérieure à 2 000 €.
+
+     Il faut localiser la MESURE, non la variation de pension totale. Une
+     première version comparait la portion au-dessus du seuil avant et après :
+     elle attribuait au haut toute variation, même née d'un taux appliqué au
+     premier décile, puisque relever le bas relève aussi le total. Une
+     revalorisation des déciles 1 et 2 y apparaissait à 48 % « haute ».
+
+     Méthode retenue : chaque tranche du barème est découpée au seuil de
+     2 000 €, et la variation qu'elle produit est imputée à la part haute au
+     prorata de ce qui, dans cette tranche, dépasse le seuil. Le plafond, lui,
+     agit par construction au-dessus de son propre seuil. */
+  const q=quantiles(E.variante), wr=poidsRel(E.variante), sl=seuils(q,wr);
+  const bornes=[0,...sl,1e12];
+  let touchee=0, hauteur=0;
+  for(let i=0;i<q.length;i++){
+    const p=q[i], w=wr[i]*POP.effectif_total;
+    /* variations par décile, tranche par tranche */
+    for(let d=0;d<10;d++){
+      const t=E.taux[d];
+      if(t===0) continue;
+      const bas=bornes[d], haut=Math.min(p,bornes[d+1]);
+      if(haut<=bas) continue;
+      const largeur=haut-bas;
+      const partAuDessus=Math.max(0,haut-Math.max(bas,PLAFOND_CNAV))/largeur;
+      const v=Math.abs(largeur*t)*12*w;
+      touchee+=v; hauteur+=v*partAuDessus;
+    }
+    /* plafond : agit sur la fraction au-dessus de son seuil */
+    if(E.plafond>0){
+      let p2=applique(p,sl,E.taux);
+      const coupe=Math.max(0,p2-E.plafond);
+      if(coupe>0){
+        const v=coupe*12*w;
+        const partAuDessus=Math.max(0,p2-Math.max(E.plafond,PLAFOND_CNAV))/coupe;
+        touchee+=v; hauteur+=v*Math.min(1,partAuDessus);
+      }
+    }
+    /* plancher : agit sous son seuil, donc entièrement dans la part basse */
+    if(E.plancher>0){
+      let p2=applique(p,sl,E.taux);
+      if(E.plafond>0)p2=Math.min(p2,E.plafond);
+      const comble=Math.max(0,E.plancher-p2);
+      if(comble>0) touchee+=comble*12*w;
+    }
+  }
+  return touchee>0 ? Math.min(1,hauteur/touchee) : 0;
+}
+
+/* ==========================================================================
+   PRÉSENTATION — état d'affichage
+   ========================================================================== */
+let MODE_SIMPLE=true, MODE_CUMUL=false, SCENARIOS=[], ONGLET='pilot';
+let COMPARE={A:null,B:null};
+let CIBLE={montant:20e9, horizon:2031,
+  leviers:{age:true, idx:true, deciles:true, plafond:true, csg:false, cot:false}};
+
+const $=id=>document.getElementById(id);
+const html=(id,s)=>{const e=$(id); if(e) e.innerHTML=s;};
+const txt=(id,s)=>{const e=$(id); if(e) e.textContent=s;};
+const fr=n=>Math.round(n).toLocaleString('fr-FR');
+const pct=(v,d)=>(v*100).toFixed(d===undefined?0:d).replace('.',',')+' %';
+const sgn=v=>v>0?'+':'−';
+
+/* Groupes de la version simple : trois tranches de retraités plutôt que dix
+   déciles. Régler un groupe applique le même taux marginal à ses déciles. */
+const GROUPES={bas:[0,1,2], moy:[3,4,5,6], haut:[7,8,9]};
+function litGroupe(g){const v=GROUPES[g].map(i=>E.taux[i]);
+  return v.every(x=>x===v[0])?v[0]:0;}
+function poseGroupe(g,val){GROUPES[g].forEach(i=>{E.taux[i]=val;});}
+
+/* ==========================================================================
+   CURSEURS — déclaratifs, un seul constructeur pour tous
+   ========================================================================== */
+const LEV={
+  simple:[
+    {id:'g-bas', nom:'Petites pensions', det:'moins de 1 270 € par mois · 4,9 M de personnes',
+     min:-30,max:30,pas:1, lire:()=>litGroupe('bas')*100, poser:v=>poseGroupe('bas',v/100),
+     aff:v=>v===0?'0 %':sgn(v)+Math.abs(v)+' %', signe:true},
+    {id:'g-moy', nom:'Pensions moyennes', det:'de 1 270 à 2 700 € · 6,6 M de personnes',
+     min:-30,max:30,pas:1, lire:()=>litGroupe('moy')*100, poser:v=>poseGroupe('moy',v/100),
+     aff:v=>v===0?'0 %':sgn(v)+Math.abs(v)+' %', signe:true},
+    {id:'g-haut', nom:'Hautes pensions', det:'plus de 2 700 € par mois · 4,9 M de personnes',
+     min:-30,max:30,pas:1, lire:()=>litGroupe('haut')*100, poser:v=>poseGroupe('haut',v/100),
+     aff:v=>v===0?'0 %':sgn(v)+Math.abs(v)+' %', signe:true},
+    {id:'g-age', nom:'Âge de départ', det:'64 ans aujourd’hui',
+     min:0,max:36,pas:3, lire:()=>PJ.age*12, poser:v=>{PJ.age=v/12;},
+     aff:v=>formatAge(v/12)},
+    {id:'g-cot', nom:'Cotisations retraite', det:'28 % du salaire brut aujourd’hui',
+     min:-30,max:30,pas:1, lire:()=>Math.round((PJ.cotSal+PJ.cotPat)*10),
+     poser:v=>{PJ.cotSal=v/10*0.404; PJ.cotPat=v/10*0.596;},
+     aff:v=>v===0?'0':sgn(v)+(Math.abs(v)/10).toFixed(1).replace('.',',')+' pt', signe:true}
+  ],
+  bornes:[
+    {id:'x-plafond', nom:'Plafond de pension', det:'aucune pension au-delà de ce montant',
+     min:0,max:12000,pas:100, lire:()=>E.plafond, poser:v=>{E.plafond=v;},
+     aff:v=>v?eur(v)+' /mois':'aucun'},
+    {id:'x-plancher', nom:'Plancher de pension', det:'aucune pension en dessous',
+     min:0,max:2000,pas:50, lire:()=>E.plancher, poser:v=>{E.plancher=v;},
+     aff:v=>v?eur(v)+' /mois':'aucun'}
+  ],
+  aspa:[
+    {id:'x-aspam', nom:'Montant garanti', det:'1 044 € par mois aujourd’hui · 754 000 allocataires',
+     min:0,max:1600,pas:10, lire:()=>Math.round(E.aspaMontant), poser:v=>{E.aspaMontant=v;},
+     aff:v=>v<=0?'supprimé':eur(v)+' /mois'},
+    {id:'x-aspar', nom:'Taux de recours', det:'part des personnes éligibles qui le demandent',
+     min:0,max:100,pas:5, lire:()=>Math.round(E.aspaRecours*100), poser:v=>{E.aspaRecours=v/100;},
+     aff:v=>v+' %'}
+  ],
+  age:[
+    {id:'x-age', nom:'Âge légal de départ', det:'64 ans pour la génération 1969 et suivantes',
+     min:0,max:48,pas:3, lire:()=>Math.round(PJ.age*12), poser:v=>{PJ.age=v/12;},
+     aff:v=>v===0?'inchangé':'+'+formatAge(v/12).replace('+','')},
+    {id:'x-duree', nom:'Durée d’assurance requise', det:'172 trimestres, soit 43 ans',
+     min:-8,max:12,pas:1, lire:()=>PJ.duree, poser:v=>{PJ.duree=v;},
+     aff:v=>v===0?'inchangée':sgn(v)+Math.abs(v)+' tr', signe:true},
+    {id:'x-emploi', nom:'Part restant en emploi', det:'parmi les départs reportés · 62 à 75 % selon les études',
+     min:40,max:100,pas:1, lire:()=>Math.round(PJ.emploi*100), poser:v=>{PJ.emploi=v/100;},
+     aff:v=>v+' %'}
+  ],
+  recettes:[
+    {id:'x-idx', nom:'Sous-indexation des pensions', det:'points sous l’inflation, chaque année',
+     min:0,max:150,pas:5, lire:()=>Math.round(PJ.idx*10000), poser:v=>{PJ.idx=v/10000;},
+     aff:v=>v===0?'aucune':(v/100).toFixed(2).replace('.',',')+' pt/an'},
+    {id:'x-idxd', nom:'Pendant combien d’années', det:'ensuite, l’indexation normale reprend',
+     min:1,max:45,pas:1, lire:()=>PJ.idxDuree, poser:v=>{PJ.idxDuree=v;},
+     aff:v=>v>=45?'toujours':v+' ans'},
+    {id:'x-cots', nom:'Cotisations salariales', det:'11,31 % aujourd’hui · retenues sur le salaire',
+     min:-110,max:150,pas:5, lire:()=>Math.round(PJ.cotSal*10), poser:v=>{PJ.cotSal=v/10;},
+     aff:v=>v===0?'inchangées':sgn(v)+(Math.abs(v)/10).toFixed(1).replace('.',',')+' pt', signe:true},
+    {id:'x-cotp', nom:'Cotisations patronales', det:'16,67 % aujourd’hui · coût du travail',
+     min:-160,max:150,pas:5, lire:()=>Math.round(PJ.cotPat*10), poser:v=>{PJ.cotPat=v/10;},
+     aff:v=>v===0?'inchangées':sgn(v)+(Math.abs(v)/10).toFixed(1).replace('.',',')+' pt', signe:true},
+    {id:'x-csg', nom:'CSG', det:'9,2 % sur les salaires · assiette bien plus large',
+     min:-50,max:50,pas:1, lire:()=>Math.round(PJ.csg*10), poser:v=>{PJ.csg=v/10;},
+     aff:v=>v===0?'inchangée':sgn(v)+(Math.abs(v)/10).toFixed(1).replace('.',',')+' pt', signe:true}
+  ],
+  hyp:[
+    {id:'x-prod', nom:'Croissance de la productivité', det:'0,7 % par an dans le scénario du COR',
+     min:4,max:16,pas:1, lire:()=>Math.round(PJ.prod*1000), poser:v=>{PJ.prod=v/1000;},
+     aff:v=>(v/10).toFixed(1).replace('.',',')+' % par an'},
+    {id:'x-var', nom:'Moyenne des pensions au-dessus de 4 500 €', det:'non publiée par la Drees',
+     min:0,max:2,pas:1,
+     lire:()=>({basse:0,centrale:1,haute:2})[E.variante],
+     poser:v=>{E.variante=['basse','centrale','haute'][v];},
+     aff:v=>['5 000 €','5 800 €','7 000 €'][v]}
+  ],
+  cible:[
+    {id:'c-montant', nom:'Somme à dégager', det:'par an, à l’horizon retenu',
+     min:0,max:800,pas:5, lire:()=>Math.round(CIBLE.montant/1e8), poser:v=>{CIBLE.montant=v*1e8;},
+     aff:v=>(v/10).toFixed(0)+' Md€'},
+    {id:'c-horizon', nom:'Horizon', det:'année à laquelle la cible doit être atteinte',
+     min:2028,max:2050,pas:1, lire:()=>CIBLE.horizon, poser:v=>{CIBLE.horizon=v;},
+     aff:v=>String(v)}
+  ]
+};
+
+function bâtir(cible, liste, apres){
+  const e=$(cible); if(!e) return;
+  e.innerHTML=liste.map(l=>`<div class="lev">
+      <div class="nom">${l.nom}</div>
+      <div class="val" id="v-${l.id}"></div>
+      <div class="det">${l.det}</div>
+      <input type="range" id="${l.id}" min="${l.min}" max="${l.max}" step="${l.pas}"
+        value="${l.lire()}" aria-label="${l.nom}">
+    </div>`).join('');
+  liste.forEach(l=>{
+    const i=$(l.id);
+    i.addEventListener('input',ev=>{ l.poser(+ev.target.value); (apres||tout)(); });
+  });
+}
+function majCurseurs(liste){
+  liste.forEach(l=>{
+    const v=l.lire(), i=$(l.id), a=$('v-'+l.id);
+    if(i && +i.value!==v) i.value=v;
+    if(a){ a.textContent=l.aff(v);
+      a.className='val'+(l.signe? (v<0?' neg':v>0?' pos':'') : ''); }
+  });
+}
+
+/* ==========================================================================
+   RÉSULTAT — un seul bloc, deux horizons
+   Le graphique porte les deux : la courbe démarre à aujourd'hui, où sa valeur
+   EST l'effet immédiat, et court jusqu'en 2070. Une décision a un prix
+   comptant et une conséquence longue ; les séparer les rendait incomparables.
+   ========================================================================== */
+function courbe(T,W,H){
+  const G=34, D=6, B=20, Ht=8;
+  const x=an=>G+(an-2026)/(2070-2026)*(W-G-D);
+  const vals=T.map(p=>p.solde).concat(T.map(p=>p.soldeRef));
+  const lo=Math.min(-2.8,...vals)-.25, hi=Math.max(1.2,...vals)+.25;
+  const y=v=>Ht+(hi-v)/(hi-lo)*(H-B-Ht);
+  const pts=c=>T.map(p=>x(p.an).toFixed(1)+','+y(p[c]).toFixed(1)).join(' ');
+  const fin=T[T.length-1], deb=T.find(p=>p.an===2027)||T[0];
+  const col=fin.solde>=fin.soldeRef?'#E9C55A':'#F0968D';
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img"
+    aria-label="Solde du système de retraite de 2026 à 2070, en points de PIB">`;
+  /* grille */
+  for(const v of [1,0,-1,-2]) s+=`<line x1="${G}" y1="${y(v)}" x2="${W-D}" y2="${y(v)}"
+     stroke="${v===0?'rgba(255,255,255,.42)':'rgba(255,255,255,.11)'}" stroke-width="1"/>
+     <text x="${G-6}" y="${y(v)+3.5}" text-anchor="end" font-family="IBM Plex Mono,monospace"
+      font-size="9" fill="#7F92B2">${v>0?'+':''}${v}</text>`;
+  for(const a of [2030,2040,2050,2060,2070]) s+=`<text x="${x(a)}" y="${H-5}" text-anchor="middle"
+     font-family="IBM Plex Mono,monospace" font-size="9" fill="#7F92B2">${a}</text>`;
+  /* aire entre référence et scénario */
+  s+=`<path d="M ${pts('solde').split(' ').join(' L ')} L ${T.slice().reverse()
+      .map(p=>x(p.an).toFixed(1)+','+y(p.soldeRef).toFixed(1)).join(' L ')} Z"
+      fill="${col}" opacity=".13"/>`;
+  s+=`<polyline fill="none" stroke="#6E86AC" stroke-width="1.3" stroke-dasharray="3 3"
+      points="${pts('soldeRef')}"/>`;
+  s+=`<polyline fill="none" stroke="${col}" stroke-width="2.3" stroke-linejoin="round"
+      points="${pts('solde')}"/>`;
+  s+=`<circle cx="${x(deb.an)}" cy="${y(deb.solde)}" r="3.4" fill="${col}"/>`;
+  return s+'</svg>';
+}
+
+function tout(){
+  EFFET_PILOTAGE = chiffrer(E.variante).nette/COR.pib2025*100;
+  const R=chiffrer(E.variante), prel=effetPrelevements(), T=trajectoire();
+  const nets=Object.keys(POP.variantes).map(v=>chiffrer(v).nette+prel);
+  const lo=Math.min(...nets), hi=Math.max(...nets), net=R.nette+prel;
+  const an1=T.find(p=>p.an===2031), fin=T[T.length-1];
+  const eff31=(an1.solde-an1.soldeRef)/100*pib(2031);
+  const actif=Math.abs(net)>1e8 || Math.abs(eff31)>1e8;
+
+  /* ---- bloc résultat ---- */
+  const cls=v=>v>=0?'gain':'perte';
+  const fourchette=Math.abs(hi-lo)>1e9;
+  html('res', !actif
+    ? `<div class="res-lig">
+         <div class="res-bloc"><div class="res-lib">Dépense de retraite aujourd’hui</div>
+           <div class="res-val num">422 Md€</div>
+           <div class="res-app">14,1 % du produit intérieur brut</div></div>
+         <div class="res-bloc"><div class="res-lib">Déficit du système en 2025</div>
+           <div class="res-val num perte">5,1 Md€</div>
+           <div class="res-app">2,4 points de PIB attendus en 2070</div></div>
+       </div>
+       ${courbe(T,660,150)}
+       <div class="res-legende"><span><i style="border-color:#6E86AC;border-top-style:dashed"></i>
+         trajectoire sans réforme, projection du COR</span></div>
+       ${tableProjection(T,false)}`
+    : `<div class="res-lig">
+         <div class="res-bloc"><div class="res-lib">Dès la première année</div>
+           <div class="res-val num ${cls(net)}">${mdS(net)}</div>
+           <div class="res-app">${fourchette?`de ${mdS(lo)} à ${mdS(hi)} · `:''}${
+             Math.abs(net/DEFICIT_COR*100).toFixed(0)} % du déficit actuel</div></div>
+         <div class="res-bloc"><div class="res-lib">Solde du système en 2070</div>
+           <div class="res-val num ${cls(fin.solde)}">${sgn(fin.solde)}${
+             Math.abs(fin.solde).toFixed(2).replace('.',',')} pt</div>
+           <div class="res-app">contre −2,40 sans rien faire</div></div>
+       </div>
+       ${courbe(T,660,150)}
+       <div class="res-legende">
+         <span><i style="border-color:${fin.solde>=fin.soldeRef?'#E9C55A':'#F0968D'}"></i>votre scénario</span>
+         <span><i style="border-color:#6E86AC;border-top-style:dashed"></i>sans réforme</span>
+         <span>solde en points de PIB</span></div>
+       ${tableProjection(T,true)}`);
+
+  if(MODE_SIMPLE){ majCurseurs(LEV.simple); motSimple(R,net,lo,hi,T); }
+  else {
+    majCurseurs(LEV.bornes); majCurseurs(LEV.aspa); majCurseurs(LEV.age);
+    majCurseurs(LEV.recettes); majCurseurs(LEV.hyp);
+    majDeciles(); majScenarios(); motsExpert(R,prel,T);
+  }
+  if(ONGLET==='inc') rendreIncidence(R,prel,T);
+  if(ONGLET==='obj') rendreCible();
+  if(ONGLET==='cmp') rendreComparaison();
+}
+
+/* ==========================================================================
+   VERSION SIMPLE — un seul paragraphe, jamais plus
+   ========================================================================== */
+/* Projection de la dépense de retraite à quelques horizons.
+   Les euros sont courants : à quarante ans d'écart ils ne se comparent pas
+   directement, d'où la colonne en points de PIB qui, elle, est comparable. */
+const ANS_PROJ=[2027,2030,2040,2050];
+/* Même projection, mise en forme pour le rapport imprimé. */
+function tableProjRapport(T){
+  const l=ANS_PROJ.concat([2070]).map(a=>{
+    const q=T.find(x=>x.an===a); if(!q) return '';
+    const md=q.dep/100*pib(a)/1e9, mdRef=q.depRef/100*pib(a)/1e9, ec=md-mdRef;
+    return `<tr><td>${a}</td><td class="num">${fr(md)} Md€</td>
+      <td class="num">${q.dep.toFixed(1).replace('.',',')} %</td>
+      <td class="num ${Math.abs(ec)<0.5?'':(ec<0?'pos':'neg')}">${
+        Math.abs(ec)<0.5?'—':(ec>0?'+':'−')+fr(Math.abs(ec))+' Md€'}</td></tr>`;
+  }).join('');
+  return `<table><thead><tr><th>Année</th><th>Euros courants</th><th>% du PIB</th>
+    <th>Écart à la référence</th></tr></thead><tbody>${l}</tbody></table>
+    <p style="font-size:.76rem;color:var(--brume);margin:.3rem 0 0">Les euros sont courants :
+    à quarante ans d’écart ils ne se comparent pas directement. Seule la part du PIB permet
+    la comparaison.</p>`;
+}
+
+function tableProjection(T,actif){
+  const l=ANS_PROJ.map(a=>{
+    const p=T.find(x=>x.an===a); if(!p) return '';
+    const md=p.dep/100*pib(a)/1e9;
+    const mdRef=p.depRef/100*pib(a)/1e9;
+    const ec=md-mdRef;
+    return `<tr><td>${a}</td>
+      <td class="num">${fr(md)} Md€</td>
+      <td class="num">${p.dep.toFixed(1).replace('.',',')} %</td>
+      ${actif?`<td class="num ${Math.abs(ec)<0.5?'':(ec<0?'pos':'neg')}">${
+        Math.abs(ec)<0.5?'—':(ec>0?'+':'−')+fr(Math.abs(ec))+' Md€'}</td>`:''}</tr>`;
+  }).join('');
+  return `<table class="proj"><thead><tr><th>Dépenses de retraite</th>
+    <th>en euros courants</th><th>en % du PIB</th>
+    ${actif?'<th>écart à la référence</th>':''}</tr></thead><tbody>${l}</tbody></table>`;
+}
+
+function motSimple(R,net,lo,hi,T){
+  if(Math.abs(net)<1e8 && PJ.age===0){
+    html('mot-simple', `<b>À vous de jouer.</b> Déplacez un curseur : vous verrez aussitôt ce que
+      votre choix rapporte — ou coûte — aux finances publiques, dès la première année puis
+      jusqu’en 2070.<br><br>
+      Trois choses valent d’être sues avant de commencer.<br><br>
+      <b>Un euro retiré n’est pas un euro gagné.</b> Une pension est imposable et supporte la CSG :
+      quand elle baisse, l’État perd aussi ce qu’elle lui rapportait. Sur les pensions élevées,
+      près de la moitié de l’économie revient ainsi par l’impôt.<br><br>
+      <b>Sous 1 044 € par mois, couper ne rapporte rien.</b> Le minimum vieillesse comble
+      l’écart, euro pour euro. L’argent change de ligne budgétaire, le retraité ne perd rien —
+      et l’État non plus n’économise rien.<br><br>
+      <b>Le temps fait plus que les réformes.</b> Une mesure d’apparence modeste, prolongée
+      quarante ans, pèse davantage qu’un geste spectaculaire fait une seule fois. C’est pourquoi
+      le graphique va jusqu’en 2070.`);
+    return;
+  }
+  const perte=i=>R.parD[i].net/R.parD[i].eff;
+  const qui=[];
+  if(Math.abs(perte(1))>10) qui.push(`${fr(Math.abs(perte(1)))} € aux petites pensions`);
+  if(Math.abs(perte(4))>10) qui.push(`${fr(Math.abs(perte(4)))} € aux pensions moyennes`);
+  if(Math.abs(perte(9))>10) qui.push(`${fr(Math.abs(perte(9)))} € aux hautes pensions`);
+  const c=PJ.cotSal+PJ.cotPat;
+  if(Math.abs(c)>0.05) qui.push(`${fr(Math.abs(c)/100*2600)} € par mois aux salariés`);
+  const dP=R.pauvAp-R.pauvAv;
+  let s='';
+  if(qui.length) s+=`Cette combinaison ${net>=0?'retire':'apporte'} en moyenne et par an
+    ${qui.join(', ')}.`;
+  if(PJ.age>0) s+=` L’âge légal passerait de 64 ans à ${ageTexte(AGES.cible+PJ.age*12)},
+    au rythme d’un trimestre par génération.`;
+  if(Math.abs(dP)>20000) s+=` <b>${fr(Math.abs(dP)/1000)} 000 retraités
+    ${dP>0?'basculeraient sous':'repasseraient au-dessus du'} le seuil de pauvreté.</b>`;
+  html('mot-simple', s||'Les montants en jeu restent trop faibles pour être détaillés.');
+}
+
+/* ==========================================================================
+   VERSION DÉTAILLÉE — curseurs par décile et scénarios
+   ========================================================================== */
+function majDeciles(){
+  const q=quantiles(E.variante), w=poidsRel(E.variante), sl=seuils(q,w);
+  const bor=i=>i===0?`moins de ${fr(sl[0])} €`:i===9?`plus de ${fr(sl[8])} €`
+    :`${fr(sl[i-1])} à ${fr(sl[i])} €`;
+  const e=$('lev-deciles'); if(!e) return;
+  if(!e.dataset.prêt){
+    e.innerHTML=Array.from({length:10},(_,i)=>`<div class="lev-c">
+      <div class="dnom">D${i+1}<span class="det" id="b-d${i}"></span></div>
+      <input type="range" id="d${i}" min="-50" max="50" step="1" value="0"
+        aria-label="Décile ${i+1}">
+      <div class="val" id="v-d${i}"></div></div>`).join('');
+    for(let i=0;i<10;i++) $('d'+i).addEventListener('input',ev=>{
+      E.taux[i]=+ev.target.value/100; tout();});
+    e.dataset.prêt='1';
+  }
+  for(let i=0;i<10;i++){
+    const t=E.taux[i], a=$('v-d'+i), inp=$('d'+i);
+    if(inp && +inp.value!==Math.round(t*100)) inp.value=Math.round(t*100);
+    a.textContent = t===0?'0 %':sgn(t)+Math.abs(t*100).toFixed(0)+' %';
+    a.className='val'+(t<0?' neg':t>0?' pos':'');
+    $('b-d'+i).textContent=bor(i);
+  }
+}
+
+const PRESETS={
+  "Écrêter les hautes pensions":{t:[0,0,0,0,0,0,0,0,-.10,-.30]},
+  "Revaloriser les plus faibles":{t:[.10,.10,.05,0,0,0,0,0,0,0]},
+  "Geler toutes les pensions 2 %":{t:Array(10).fill(-.02)},
+  "Plafonner à 4 000 €":{t:Array(10).fill(0),pf:4000},
+  "Garantir 1 200 € minimum":{t:Array(10).fill(0),pl:1200},
+  "Sous-indexer 0,3 pt/an":{t:Array(10).fill(0),idx:0.003},
+  "Reculer l’âge d’un an":{t:Array(10).fill(0),age:1},
+  "Allonger la durée d’un an":{t:Array(10).fill(0),duree:4},
+  "Financer par la CSG":{t:Array(10).fill(0),csg:1},
+  "Financer par les cotisations":{t:Array(10).fill(0),cotSal:0.4,cotPat:0.6},
+  "Alléger le coût du travail":{t:Array(10).fill(0),cotPat:-2},
+  "Supprimer le minimum vieillesse":{t:Array(10).fill(0),am:0},
+  "Tout remettre à zéro":{t:Array(10).fill(0),raz:true}
+};
+function majScenarios(){
+  const e=$('presets'); if(!e) return;
+  if(!e.dataset.prêt){
+    e.innerHTML=Object.keys(PRESETS).map(k=>
+      `<button class="puce" data-p="${k}" data-actif="0">${k}</button>`).join('');
+    e.querySelectorAll('[data-p]').forEach(b=>b.addEventListener('click',()=>{
+      const p=PRESETS[b.dataset.p];
+      if(p.raz){ razTout(); SCENARIOS=[]; }
+      else if(!MODE_CUMUL){
+        E.taux=[...p.t]; E.plafond=p.pf||0; E.plancher=p.pl||0;
+        E.aspaMontant=p.am!==undefined?p.am:1043.59; E.aspaRecours=1;
+        PJ.idx=p.idx||0; PJ.age=p.age||0; PJ.duree=p.duree||0;
+        PJ.cotSal=p.cotSal||0; PJ.cotPat=p.cotPat||0; PJ.csg=p.csg||0;
+        SCENARIOS=[b.dataset.p];
+      }else{
+        E.taux=E.taux.map((x,i)=>Math.max(-.5,Math.min(.5,x+p.t[i])));
+        if(p.pf) E.plafond=E.plafond>0?Math.min(E.plafond,p.pf):p.pf;
+        if(p.pl) E.plancher=Math.max(E.plancher,p.pl);
+        if(p.am!==undefined) E.aspaMontant=Math.min(E.aspaMontant,p.am);
+        if(p.idx) PJ.idx=Math.min(.015,PJ.idx+p.idx);
+        if(p.age) PJ.age=Math.min(4,PJ.age+p.age);
+        if(p.duree) PJ.duree=Math.max(-8,Math.min(12,PJ.duree+p.duree));
+        if(p.cotSal) PJ.cotSal=Math.max(-TAUX_SALARIAL,Math.min(15,PJ.cotSal+p.cotSal));
+        if(p.cotPat) PJ.cotPat=Math.max(-TAUX_PATRONAL,Math.min(15,PJ.cotPat+p.cotPat));
+        if(p.csg) PJ.csg=Math.max(-5,Math.min(5,PJ.csg+p.csg));
+        SCENARIOS.push(b.dataset.p);
+      }
+      tout();
+    }));
+    e.dataset.prêt='1';
+  }
+  e.querySelectorAll('[data-p]').forEach(b=>
+    b.setAttribute('data-actif', SCENARIOS.indexOf(b.dataset.p)>=0?'1':'0'));
+  html('actifs', SCENARIOS.length
+    ? `<b>${SCENARIOS.length>1?'Scénarios cumulés':'Scénario appliqué'} :</b> ${SCENARIOS.join(' · ')}`
+    : MODE_CUMUL
+      ? `Chaque scénario choisi s’ajoutera aux précédents.`
+      : `Choisissez un scénario, ou réglez les curseurs directement.`);
+}
+function razTout(){
+  E.taux=Array(10).fill(0); E.plafond=0; E.plancher=0;
+  E.aspaMontant=1043.59; E.aspaRecours=1;
+  PJ.idx=0; PJ.idxDuree=5; PJ.age=0; PJ.duree=0;
+  PJ.cotSal=0; PJ.cotPat=0; PJ.csg=0;
+}
+
+/* ---- notes contextuelles de la version détaillée ---- */
+function motsExpert(R,prel,T){
+  /* ordre d'application et non-additivité */
+  let o=`Ordre d’application : variations par décile, puis plafond, puis plancher.
+    Chaque étape porte sur le résultat de la précédente.`;
+  if(E.taux.some(t=>t!==0) && E.plafond>0){
+    const gp=E.plafond; E.plafond=0; const sansP=chiffrer(E.variante).brute; E.plafond=gp;
+    const gt=E.taux; E.taux=Array(10).fill(0); const sansD=chiffrer(E.variante).brute; E.taux=gt;
+    o+=` <b>Ces deux mesures ne s’additionnent pas :</b> séparément ${mdS(sansP)} et ${mdS(sansD)},
+      soit ${mdS(sansP+sansD)} au total, mais ${mdS(R.brute)} ensemble. Le plafond mord sur une
+      distribution déjà écrêtée.`;
+  }
+  html('mot-ordre', o);
+
+  /* ASPA */
+  const sup=E.aspaMontant<=0||E.aspaRecours<=0;
+  html('mot-aspa', sup
+    ? `<b>Plus aucun filet sous la pension.</b> Le décile 1, dont la pension brute moyenne est de
+       ${fr(R.parD[0].av/R.parD[0].eff)} € par mois, subirait alors intégralement toute baisse.
+       Allocataires modélisés : ${fr(R.benefAp/1000)} 000, contre 754 460 réels.`
+    : `Allocation différentielle : elle comble l’écart entre les ressources et le montant garanti,
+       si bien que toute baisse de pension en dessous est compensée à l’euro près.
+       Allocataires modélisés : ${fr(R.benefAp/1000)} 000, réel 754 460.`);
+
+  /* âge et durée */
+  const dec=PJ.age*12, nouvel=AGES.cible+dec;
+  let a=`Âge légal ${ageTexte(AGES.cible)} → <b>${ageTexte(nouvel)}</b> ·
+    durée requise 172 → <b>${DUREE.requiseActuelle+PJ.duree} trimestres</b>.
+    L’âge effectif moyen est aujourd’hui de 63 ans et 7 mois, bien en dessous du plafond légal.`;
+  if(PJ.duree!==0) a+=` Un allongement de durée ne touche pas les 10,6 % qui partent à 67 ans :
+    à cet âge le taux plein est acquis quelle que soit la durée validée. Il frappe donc les
+    carrières incomplètes, plus souvent féminines.`;
+  if(nouvel>=AGES.tauxPleinAutomatique) a+=` <b class="alerte" style="color:var(--perte)">L’âge légal
+    atteint 67 ans, l’âge du taux plein automatique, que ce levier ne déplace pas. Au-delà, le
+    chiffrage cesse d’être valide.</b>`;
+  if(PJ.age>0){ const d=effetAge(PJ.age);
+    a+=`<br><br>Sur ${fr(d.personnes)} départs reportés : ${mdS(d.eco)} de pensions non versées,
+      ${mdS(d.cotis)} de cotisations, ${mdS(-d.subst)} de chômage et d’invalidité.
+      La part restant en emploi compte moins qu’on ne le croit — une allocation coûte moins
+      qu’une pension.`; }
+  html('mot-age', a);
+
+  /* recettes */
+  const rendu=(PJ.cotSal+PJ.cotPat)*ELAST.mdParPointVieillessePlafonnee+PJ.csg*ELAST.mdParPointCSG;
+  let r=`Chaque prélèvement a son assiette, et un point n’y vaut pas la même chose :
+    <b>17,6 Md€</b> pour un point de CSG, <b>7,1 Md€</b> pour la cotisation vieillesse déplafonnée,
+    <b>6,2 Md€</b> pour la plafonnée. La CSG rapporte près de trois fois plus, parce qu’elle porte
+    aussi sur les pensions et le patrimoine.`;
+  if(Math.abs(rendu)>1e8) r+=` Ce réglage rapporte ${mdS(rendu)} par an, soit
+    ${(rendu/COR.pib2025*100).toFixed(2).replace('.',',')} point de PIB.`;
+  if(PJ.idx>0){ const p=1-Math.pow(1-PJ.idx,PJ.idxDuree);
+    r+=`<br><br><b>La sous-indexation ampute toutes les pensions de ${pct(p,1)} après
+      ${PJ.idxDuree} ans</b>, y compris celles qu’aucune autre mesure ne touche.`; }
+  if(Math.max(Math.abs(PJ.cotSal),Math.abs(PJ.cotPat),Math.abs(PJ.csg)*2)>3)
+    r+=`<br><br><b style="color:var(--perte)">Au-delà de trois points, ce chiffrage extrapole :</b>
+      une variation de cette ampleur modifierait l’emploi et l’assiette elle-même.`;
+  html('mot-recettes', r);
+
+  /* hypothèses */
+  html('mot-hyp', `La productivité n’est pas un levier de décision mais un pari macroéconomique.
+    Les pensions suivent les prix, les salaires suivent la productivité : plus celle-ci est forte,
+    plus la part des retraites dans le PIB recule d’elle-même. <b>Mais cette baisse se paie</b> —
+    le taux de remplacement tombe à ${tauxRemplacement(2070,PJ.prod).toFixed(0)} % en 2070,
+    contre 55 % aujourd’hui. Le déficit se résorbe par appauvrissement relatif des retraités,
+    sans qu’aucune décision soit prise.`);
+  tableauProd();
+}
+function tableauProd(){
+  const sv=PJ.prod;
+  let h=`<thead><tr><th>Productivité</th><th>Dépenses 2040</th><th>Dépenses 2070</th>
+    <th>Remplacement 2070</th><th></th></tr></thead><tbody>`;
+  for(const [p,note] of [[0.004,'variante basse du COR'],[0.007,'scénario de référence'],
+      [0.010,'variante haute du COR'],[0.013,'au-delà des variantes publiées'],
+      [0.016,'au-delà des variantes publiées']]){
+    PJ.prod=p; const T=trajectoire(), d=a=>T.find(x=>x.an===a).dep.toFixed(1).replace('.',',');
+    const act=Math.abs(sv-p)<0.0005;
+    h+=`<tr${act?' style="background:var(--carte);font-weight:600"':''}>
+      <td>${(p*100).toFixed(1).replace('.',',')} %</td>
+      <td class="num">${d(2040)} %</td><td class="num">${d(2070)} %</td>
+      <td class="num">${tauxRemplacement(2070,p).toFixed(0)} %</td>
+      <td class="fin" style="text-align:left">${note}</td></tr>`;
+  }
+  PJ.prod=sv;
+  html('tab-prod', h+'</tbody>');
+}
+
+/* ==========================================================================
+   QUI PAIE
+   ========================================================================== */
+const md1=v=>(v/1e9).toFixed(1).replace('.',',');
+function rendreIncidence(R,prel,T){
+  const L=(k,v,c)=>`<tr><td>${k}</td><td class="num ${c||''}">${v}</td></tr>`;
+  const net=R.nette+prel;
+  html('tab-cascade', `<tbody>
+    ${L('Effet brut sur les pensions versées', mdS(R.brute))}
+    ${L('CSG', mdS(-R.csg),'neg')}
+    ${L('CRDS et CASA', mdS(-(R.crds+R.casa)),'neg')}
+    ${L('Impôt sur le revenu', mdS(-R.ir),'neg')}
+    ${L('Minimum vieillesse', mdS(-R.aspa),'neg')}
+    ${Math.abs(prel)>1e8?L('Cotisations et CSG', mdS(prel)):''}
+    <tr class="total"><td>Effet net sur les finances publiques</td>
+      <td class="num">${mdS(net)}</td></tr></tbody>`);
+  const etat=-R.ir, asso=R.brute-R.soc-R.aspa+prel;
+  html('mot-cascade', `Une pension est imposable et supporte la CSG : quand elle baisse, l’État
+    perd aussi ce qu’elle rapportait. Sous 1 044 € par mois, le minimum vieillesse compense
+    l’écart, si bien que l’économie y est nulle.<br><br>
+    <b>Qui encaisse :</b> l’État ${mdS(etat)} par l’impôt, la Sécurité sociale ${mdS(asso)}
+    par les pensions, la CSG et l’ASPA. Une réforme peut être presque neutre au total tout en
+    déplaçant des milliards entre caisses.`);
+
+  /* par décile */
+  const q=quantiles(E.variante), w=poidsRel(E.variante), ss=seuils(q,w);
+  const pIdx=PJ.idx>0?1-Math.pow(1-PJ.idx,PJ.idxDuree):0;
+  let h=`<thead><tr><th>Décile</th><th>Brut moyen</th><th>après</th>`
+    +(pIdx>0?`<th>Sous-indexation<br>après ${PJ.idxDuree} ans</th>`:``)
+    +`<th>Net moyen</th><th>Perte nette<br>annuelle</th></tr></thead><tbody>`;
+  R.parD.forEach((d,i)=>{
+    const av=d.av/d.eff, ap=d.ap/d.eff, na=d.netAp/d.eff, pe=d.net/d.eff;
+    const bor=i===0?`< ${fr(ss[0])}`:i===9?`> ${fr(ss[8])}`:`${fr(ss[i-1])}–${fr(ss[i])}`;
+    h+=`<tr><td>D${i+1}<span class="fin">${bor} €</span></td>
+      <td class="num">${fr(av)} €</td><td class="num">${fr(ap)} €</td>`
+      +(pIdx>0?`<td class="num neg">−${fr(ap*pIdx*12)} €</td>`:``)
+      +`<td class="num" style="color:var(--brume)">${fr(na)} €</td>
+      <td class="num ${pe>1?'neg':pe<-1?'pos':''}">${Math.abs(pe)<1?'—'
+        :(pe>0?'−':'+')+fr(Math.abs(pe))+' €'}</td></tr>`;
+  });
+  html('tab-deciles', h+'</tbody>');
+  const dP=R.pauvAp-R.pauvAv;
+  html('mot-deciles', `Les montants sont des moyennes de décile pondérées par les effectifs,
+    non des bornes. La perte nette est celle du ménage après impôt, prélèvements sociaux et
+    minimum vieillesse — toujours inférieure à la baisse brute.
+    ${pIdx>0?`<br><br><b>La sous-indexation frappe tout le monde</b>, y compris les déciles
+      qu’aucune autre mesure ne touche : ${pct(pIdx,1)} de pension en moins après
+      ${PJ.idxDuree} ans.`:''}
+    <br><br>Retraités dont la pension nette est inférieure au seuil de pauvreté de 1 337 € :
+    <b>${(R.pauvAp/1e6).toFixed(2).replace('.',',')} M</b>${Math.abs(dP)>5000
+      ? ` contre ${(R.pauvAv/1e6).toFixed(2).replace('.',',')} M avant mesure`:''}.
+    Ce n’est pas le taux de pauvreté officiel, qui se calcule sur le niveau de vie du ménage
+    et s’établissait à 10,4 % des retraités en 2024.`);
+
+  /* masses */
+  let m=`<thead><tr><th>Décile</th><th>Pensions</th><th>après</th><th>Contributions</th>
+    <th>Taux</th></tr></thead><tbody>`;
+  let TP=0,TPa=0,TC=0;
+  R.parD.forEach((d,i)=>{ TP+=d.mPensAv; TPa+=d.mPensAp; TC+=d.mContAv;
+    m+=`<tr><td>D${i+1}</td><td class="num">${md1(d.mPensAv)}</td>
+      <td class="num">${md1(d.mPensAp)}</td><td class="num">${md1(d.mContAv)}</td>
+      <td class="num" style="color:var(--brume)">${pct(d.mContAv/d.mPensAv,1)}</td></tr>`;});
+  m+=`<tr class="total"><td>Total</td><td class="num">${md1(TP)}</td>
+    <td class="num">${md1(TPa)}</td><td class="num">${md1(TC)}</td>
+    <td class="num">${pct(TC/TP,1)}</td></tr>`;
+  html('tab-masses', m+'</tbody>');
+  html('mot-masses', `En milliards d’euros par an. Les contributions regroupent CSG, CRDS, CASA
+    et impôt sur le revenu acquittés sur les pensions. Le taux passe de 0 % au décile 1 à
+    ${pct(R.parD[9].mContAv/R.parD[9].mPensAv,1)} au décile 10 : le dernier décile perçoit
+    un quart des pensions et acquitte deux cinquièmes des contributions.`);
+
+  /* régimes */
+  const mt=REGIMES.reduce((a,r)=>a+r.masse,0), parA={};
+  REGIMES.forEach(r=>parA[r.aut]=(parA[r.aut]||0)+r.masse);
+  let g=`<thead><tr><th>Régime</th><th>Masse versée</th><th>Part</th>
+    <th>Qui décide</th></tr></thead><tbody>`;
+  REGIMES.forEach(r=>{g+=`<tr><td>${r.nom}</td><td class="num">${md1(r.masse)} Md€</td>
+    <td class="num">${pct(r.masse/mt,1)}</td>
+    <td class="fin" style="text-align:left">${AUTORITES[r.aut].lib}</td></tr>`;});
+  for(const a of ['loi','paritaire','employeur'])
+    g+=`<tr class="total"><td>${AUTORITES[a].lib}<span class="fin">${AUTORITES[a].det}</span></td>
+      <td class="num">${md1(parA[a])} Md€</td><td class="num">${pct(parA[a]/mt,1)}</td><td></td></tr>`;
+  html('tab-regimes', g+'</tbody>');
+  html('mot-regimes', `<b>Un quart de la dépense échappe au législateur.</b> L’Agirc-Arrco verse
+    83,3 Md€ par an et relève d’accords entre partenaires sociaux : elle a gelé ses pensions en
+    2026 pendant que la CNAV les revalorisait de 0,9 %. Deux décisions opposées la même année,
+    prises par deux autorités distinctes.<br><br>
+    Ce sont les masses, non les effectifs : un polypensionné apparaît dans plusieurs caisses, et
+    leur somme donnerait 38,9 millions de retraités pour 17,3 millions réels.`);
+
+  if(Math.abs(R.brute)<1e8){
+    html('tab-imputation',''); html('mot-imputation',
+      `Réglez une mesure sur les pensions pour voir sur quelles caisses elle tombe.`);
+    return;
+  }
+  const ph=partHauteScenario(), rep=repartitionRegimes(ph), pA={};
+  rep.forEach(r=>pA[r.aut]=(pA[r.aut]||0)+r.part);
+  let im=`<thead><tr><th>Régime</th><th>Effet</th><th>Part</th>
+    <th>Qui décide</th></tr></thead><tbody>`;
+  rep.filter(r=>r.part>0.005).sort((a,b)=>b.part-a.part).forEach(r=>{
+    im+=`<tr><td>${r.nom}</td><td class="num">${mdS(R.brute*r.part)}</td>
+      <td class="num">${pct(r.part,1)}</td>
+      <td class="fin" style="text-align:left">${AUTORITES[r.aut].lib}</td></tr>`;});
+  im+=`<tr class="total"><td>Hors pouvoir du législateur</td>
+    <td class="num">${mdS(R.brute*(pA.paritaire||0))}</td>
+    <td class="num">${pct(pA.paritaire||0,1)}</td><td></td></tr>`;
+  html('tab-imputation', im+'</tbody>');
+  html('mot-imputation', `<b>${pct(ph)} de l’effet porte sur des pensions supérieures à 2 000 €
+    par mois.</b> Or la CNAV ne verse guère au-delà : la part haute d’une pension vient des
+    complémentaires ou des régimes intégrés de la fonction publique. Plus une mesure vise le haut,
+    plus elle épargne le régime général et tombe sur des caisses que le législateur ne pilote pas.
+    ${pct(pA.paritaire||0)} de ce scénario suppose une négociation, non un vote.<br><br>
+    Sous 2 000 €, la répartition reste proportionnelle aux masses, faute de données croisant
+    régime et niveau de pension.`);
+}
+
+/* ==========================================================================
+   ATTEINDRE UNE CIBLE — résolution inverse par dichotomie
+   ========================================================================== */
+const PROFILS=[
+  {nom:"Concentré sur les hautes pensions", desc:"l’effort porte sur le dernier quart",
+   besoin:['deciles','plafond'],
+   dose:k=>({taux:[0,0,0,0,0,0,0,Math.max(-.25,-.04*k),Math.max(-.45,-.10*k),Math.max(-.60,-.25*k)],
+             plafond:k>0.4?Math.max(2200,5200-1200*k):0})},
+  {nom:"Réparti sur tous les retraités", desc:"sous-indexation uniforme, aucun barème modifié",
+   besoin:['idx'], dose:k=>({idx:Math.min(.02,.006*k)})},
+  {nom:"Décalage de l’âge", desc:"seuls les futurs liquidants sont concernés",
+   besoin:['age'], dose:k=>({age:Math.min(4,1.2*k)})},
+  {nom:"Équilibré entre les trois", desc:"un tiers âge, un tiers indexation, un tiers hautes pensions",
+   besoin:['age','idx','deciles'],
+   dose:k=>({age:Math.min(4,.7*k), idx:Math.min(.02,.003*k),
+             taux:[0,0,0,0,0,0,0,-.02*k,-.06*k,Math.max(-.5,-.15*k)]})},
+  {nom:"Par la CSG", desc:"assiette large : pensions et patrimoine y contribuent",
+   besoin:['csg'], dose:k=>({csg:Math.min(5,1.2*k)})},
+  {nom:"Par les cotisations", desc:"assiette limitée aux salaires, sous plafond",
+   besoin:['cot'], dose:k=>({cotSal:Math.min(6,1.4*k), cotPat:Math.min(9,2.1*k)})}
+];
+function rendementAn(an){
+  EFFET_PILOTAGE=chiffrer(E.variante).nette/COR.pib2025*100;
+  const T=trajectoire(), p=T.find(x=>x.an===an);
+  return (p.solde-p.soldeRef)/100*pib(an);
+}
+function resoudre(pr,cible,an){
+  let bas=0,haut=8,k=0,at=0;
+  for(let i=0;i<40;i++){k=(bas+haut)/2; appliquerDose(pr.dose(k)); at=rendementAn(an);
+    if(at<cible) bas=k; else haut=k;}
+  appliquerDose(pr.dose(k)); at=rendementAn(an);
+  return {k,atteint:at,dose:pr.dose(k),suffisant:at>=cible*.97};
+}
+const LEVIERS={age:'Âge de départ', idx:'Sous-indexation', deciles:'Écrêtement par décile',
+  plafond:'Plafond de pension', csg:'CSG', cot:'Cotisations'};
+function rendreCible(){
+  majCurseurs(LEV.cible);
+  const e=$('cb-leviers');
+  if(e && !e.dataset.prêt){
+    e.innerHTML=Object.keys(LEVIERS).map(k=>
+      `<button class="puce" data-lev="${k}">${LEVIERS[k]}</button>`).join('');
+    e.querySelectorAll('[data-lev]').forEach(b=>b.addEventListener('click',()=>{
+      CIBLE.leviers[b.dataset.lev]=!CIBLE.leviers[b.dataset.lev]; rendreCible();}));
+    e.dataset.prêt='1';
+  }
+  if(e) e.querySelectorAll('[data-lev]').forEach(b=>
+    b.setAttribute('data-actif', CIBLE.leviers[b.dataset.lev]?'1':'0'));
+
+  const sv=etatCourant(); let out='', aucun=true;
+  for(const pr of PROFILS){
+    if(!pr.besoin.every(l=>CIBLE.leviers[l])) continue;
+    aucun=false;
+    const r=resoudre(pr,CIBLE.montant,CIBLE.horizon);
+    const R=chiffrer('centrale'), T=trajectoire(), d=r.dose;
+    const pI=PJ.idx>0?1-Math.pow(1-PJ.idx,PJ.idxDuree):0;
+    const li=[];
+    if(d.age) li.push(`âge légal 64 ans → ${ageTexte(AGES.cible+d.age*12)}`);
+    if(d.idx) li.push(`sous-indexation de ${(d.idx*100).toFixed(2).replace('.',',')} pt/an
+      pendant ${PJ.idxDuree} ans, soit ${pct(pI,1)} de pension en moins pour tous`);
+    if(d.plafond) li.push(`plafond de pension à ${eur(d.plafond)} par mois`);
+    if(d.taux && d.taux.some(x=>x!==0)) li.push(`écrêtement marginal : décile 8
+      ${(d.taux[7]*100).toFixed(0)} %, décile 9 ${(d.taux[8]*100).toFixed(0)} %,
+      décile 10 ${(d.taux[9]*100).toFixed(0)} %`);
+    if(d.csg) li.push(`CSG +${d.csg.toFixed(2).replace('.',',')} point`);
+    if(d.cotSal) li.push(`cotisations +${(d.cotSal+d.cotPat).toFixed(1).replace('.',',')} points`);
+    const pe=i=>R.parD[i].net/R.parD[i].eff + R.parD[i].ap/R.parD[i].eff*pI*12;
+    out+=`<div class="bloc"><h3>${pr.nom}</h3>
+      <p style="margin-bottom:.4rem">${pr.desc}</p>`
+      + (r.suffisant
+        ? `<div class="rap-lig"><span>Dosage nécessaire</span>
+             <span class="v num" style="color:var(--gain)">${md1(r.atteint)} Md€</span></div>
+           <ul style="margin:.5rem 0 .5rem 1.1rem;font-size:.86rem;color:var(--encre-2)">
+             ${li.map(x=>'<li>'+x+'</li>').join('')}</ul>
+           <p style="font-size:.8rem;color:var(--brume)">Perte nette annuelle :
+             décile 5 ${fr(Math.abs(pe(4)))} € · décile 10 ${fr(Math.abs(pe(9)))} € ·
+             solde 2070 ${T.find(x=>x.an===2070).solde.toFixed(2).replace('.',',')} pt</p>`
+        : `<p style="color:var(--perte)"><b>Cible hors d’atteinte par ce seul levier.</b>
+           Au maximum, il ne dégage que ${md1(r.atteint)} Md€ sur les
+           ${md1(CIBLE.montant)} demandés.</p>`)
+      + `</div>`;
+  }
+  restaurer(sv); EFFET_PILOTAGE=chiffrer(E.variante).nette/COR.pib2025*100;
+  html('cb-res', aucun
+    ? `<p class="note">Aucun profil ne correspond aux leviers autorisés. Activez-en davantage.</p>`
+    : out);
+  html('mot-cible', `Chaque profil est une direction ; l’outil en cherche l’intensité qui atteint
+    la cible, par approximations successives. Les leviers saturent — l’âge est borné à quatre ans,
+    la sous-indexation à deux points par an — et une cible trop élevée devient hors d’atteinte,
+    ce qui est signalé. À rendement égal, ces dosages désignent des perdants différents : ce sont
+    des points de départ, pas des recommandations.`);
+}
+
+/* ==========================================================================
+   COMPARER
+   ========================================================================== */
+function nomScenario(){ return SCENARIOS.length?SCENARIOS.join(' + '):'Réglage manuel'; }
+function indicateurs(etat){
+  const sv=etatCourant(); restaurer(etat);
+  EFFET_PILOTAGE=chiffrer(E.variante).nette/COR.pib2025*100;
+  const R=chiffrer(E.variante), T=trajectoire(), prel=effetPrelevements();
+  const nets=Object.keys(POP.variantes).map(v=>chiffrer(v).nette+prel);
+  const pI=PJ.idx>0?1-Math.pow(1-PJ.idx,PJ.idxDuree):0;
+  const pe=i=>R.parD[i].net/R.parD[i].eff + R.parD[i].ap/R.parD[i].eff*pI*12;
+  const eff=an=>{const q=T.find(x=>x.an===an); return (q.solde-q.soldeRef)/100*pib(an);};
+  const eq=T.find(x=>x.an>2026&&x.solde>=0);
+  const mes=[];
+  E.taux.forEach((t,i)=>{if(t!==0) mes.push(`D${i+1} ${sgn(t)}${Math.abs(t*100).toFixed(0)} %`);});
+  if(E.plafond>0) mes.push('plafond '+eur(E.plafond));
+  if(E.plancher>0) mes.push('plancher '+eur(E.plancher));
+  if(E.aspaMontant!==1043.59) mes.push(E.aspaMontant<=0?'ASPA supprimée':'ASPA '+eur(E.aspaMontant));
+  if(PJ.idx>0) mes.push(`sous-indexation ${(PJ.idx*100).toFixed(2).replace('.',',')} pt sur ${PJ.idxDuree} ans`);
+  if(PJ.age>0) mes.push('âge '+ageTexte(AGES.cible+PJ.age*12));
+  if(PJ.duree!==0) mes.push('durée '+(DUREE.requiseActuelle+PJ.duree)+' tr');
+  if(PJ.cotSal!==0) mes.push(`cot. sal. ${sgn(PJ.cotSal)}${Math.abs(PJ.cotSal).toFixed(1)}`);
+  if(PJ.cotPat!==0) mes.push(`cot. pat. ${sgn(PJ.cotPat)}${Math.abs(PJ.cotPat).toFixed(1)}`);
+  if(PJ.csg!==0) mes.push(`CSG ${sgn(PJ.csg)}${Math.abs(PJ.csg).toFixed(1)}`);
+  const res={nom:etat.nom, mes, net:R.nette+prel, lo:Math.min(...nets), hi:Math.max(...nets),
+    e2031:eff(2031), e2040:eff(2040), s70:T[T.length-1].solde, equilibre:eq?eq.an:null,
+    pauvres:R.pauvAp, baisse:pI, d3:pe(2), d5:pe(4), d10:pe(9),
+    remplacement:tauxRemplacement(2070,PJ.prod)};
+  restaurer(sv); EFFET_PILOTAGE=chiffrer(E.variante).nette/COR.pib2025*100;
+  return res;
+}
+function rendreComparaison(){
+  const A=COMPARE.A?indicateurs(COMPARE.A):null, B=COMPARE.B?indicateurs(COMPARE.B):null;
+  if(!A&&!B){ html('tab-comp',''); html('mot-comp',
+    `Aucun scénario enregistré. Réglez les curseurs, puis enregistrez en A.`); return; }
+  const c=(x,f)=>x?f(x):'<span style="color:var(--brume)">—</span>';
+  const ec=(f,inv)=>{ if(!A||!B) return '—';
+    const d=f(B)-f(A); if(Math.abs(d)<1e-9) return '=';
+    const bon=inv?d<0:d>0;
+    return `<span style="color:${bon?'var(--gain)':'var(--perte)'}">${d>0?'+':'−'}${
+      Math.abs(d)>1e6?md1(Math.abs(d))+' Md':Math.abs(d)>100?fr(Math.abs(d))
+      :Math.abs(d).toFixed(2).replace('.',',')}</span>`; };
+  const L=(lib,f,fmt,inv)=>`<tr><td>${lib}</td><td class="num">${c(A,x=>fmt(f(x)))}</td>
+    <td class="num">${c(B,x=>fmt(f(x)))}</td><td class="num fin">${ec(f,inv)}</td></tr>`;
+  const pt=v=>sgn(v)+Math.abs(v).toFixed(2).replace('.',',')+' pt';
+  let h=`<thead><tr><th></th><th>A</th><th>B</th><th>Écart</th></tr></thead><tbody>
+    <tr><td>Intitulé</td><td colspan="3" style="text-align:left;font-size:.8rem">
+      ${A?'<b>A</b> '+A.nom:''}${A&&B?'<br>':''}${B?'<b>B</b> '+B.nom:''}</td></tr>
+    <tr><td>Mesures</td><td colspan="3" style="text-align:left;font-size:.76rem;color:var(--brume)">
+      ${A?'<b>A</b> '+(A.mes.join(' · ')||'aucune'):''}${A&&B?'<br>':''}
+      ${B?'<b>B</b> '+(B.mes.join(' · ')||'aucune'):''}</td></tr>`;
+  h+=L('Effet total en 2031', x=>x.e2031, v=>mdS(v));
+  h+=L('Effet total en 2040', x=>x.e2040, v=>mdS(v));
+  h+=`<tr><td>dont effet immédiat<span class="fin">hors âge et indexation</span></td>
+    <td class="num" style="color:var(--brume)">${c(A,x=>mdS(x.net))}</td>
+    <td class="num" style="color:var(--brume)">${c(B,x=>mdS(x.net))}</td><td></td></tr>`;
+  h+=L('Solde 2070', x=>x.s70, pt);
+  h+=`<tr><td>Retour à l’équilibre</td><td class="num">${c(A,x=>x.equilibre||'jamais')}</td>
+    <td class="num">${c(B,x=>x.equilibre||'jamais')}</td><td></td></tr>`;
+  h+=L('Baisse générale des pensions', x=>x.baisse*100,
+       v=>v<0.05?'—':'−'+v.toFixed(1).replace('.',',')+' %', true);
+  h+=L('Perte nette, décile 3', x=>x.d3, v=>Math.abs(v)<1?'—':'−'+fr(v)+' €', true);
+  h+=L('Perte nette, décile 5', x=>x.d5, v=>Math.abs(v)<1?'—':'−'+fr(v)+' €', true);
+  h+=L('Perte nette, décile 10', x=>x.d10, v=>Math.abs(v)<1?'—':'−'+fr(v)+' €', true);
+  h+=L('Retraités sous le seuil', x=>x.pauvres/1e6, v=>v.toFixed(2).replace('.',',')+' M', true);
+  h+=L('Taux de remplacement 2070', x=>x.remplacement, v=>v.toFixed(0)+' %');
+  html('tab-comp', h+'</tbody>');
+  let n='';
+  if(A&&B){
+    const d=B.e2031-A.e2031;
+    n = Math.abs(d)<1.5e9
+      ? `<b>Rendement comparable en 2031</b> — moins de 1,5 Md€ d’écart. La comparaison porte
+         donc sur ce qui compte : <b>qui paie</b>. `
+      : `<b>En 2031, ${d>0?'B':'A'} rapporte ${md1(Math.abs(d))} Md€ de plus que ${d>0?'A':'B'}.</b> `;
+    n += `Le décile 10 est plus touché par ${B.d10>A.d10?'B':'A'}. `;
+    if(Math.max(A.baisse,B.baisse)>.005)
+      n += `${B.baisse>A.baisse?'B':'A'} fait davantage porter l’effort sur l’ensemble des
+        retraités, par la sous-indexation — un effet qui n’apparaît dans aucune ligne par décile.`;
+  } else n=`Un seul scénario enregistré. Réglez-en un second pour voir l’écart.`;
+  html('mot-comp', n);
+}
+
+/* ==========================================================================
+   MÉTHODE
+   ========================================================================== */
+const METHODE=`
+<h2>Ce que cet outil calcule</h2>
+<div class="bloc">
+<p>Il applique les barèmes en vigueur à une population de 16,4 millions de retraités,
+reconstituée à partir des données de la Drees, puis infléchit la trajectoire du système
+projetée par le Conseil d’orientation des retraites.</p>
+<p>Les calculs par foyer sont exacts pour un ménage dont les seules ressources sont des
+pensions. Les agrégats nationaux reposent sur une distribution observée, mais dont le
+sommet est modélisé.</p>
+</div>
+
+<h2>D’où viennent les chiffres</h2>
+<div class="bloc"><h3>Population et pensions</h3>
+<p>Effectifs et pensions moyennes par âge et sexe : enquête annuelle auprès des caisses de
+retraite, millésime 2024, enrichie du modèle Ancetre — 16 429 118 retraités de droit direct
+résidant en France, 1 705 € de pension moyenne.</p>
+<p>Distribution des pensions : échantillon interrégimes de retraités 2020, tableau 5, en
+46 tranches de 100 €. Sa moyenne implicite concorde à 3,6 % près avec l’EACR de la même année,
+l’écart correspondant à la majoration pour trois enfants.</p>
+<p>Masses par régime : 335 Md€ répartis entre une trentaine de caisses. Ce sont les masses et
+non les effectifs, car un polypensionné apparaît dans plusieurs caisses.</p></div>
+
+<div class="bloc"><h3>Barèmes 2026</h3>
+<p>Impôt sur le revenu : 11 600 / 29 579 / 84 577 / 181 917 €, loi de finances pour 2026,
+article 197 du code général des impôts. Abattement de 10 % sur les pensions, minimum 454 €
+par pensionné et maximum 4 439 € par foyer.</p>
+<p>CSG à 8,3 / 6,6 / 3,8 %, CRDS 0,5 %, CASA 0,3 %, article L.136-8 du code de la sécurité
+sociale. Minimum vieillesse à 1 043,59 € par mois pour une personne seule.</p>
+<p>Valeur du point : 17,6 Md€ pour la CSG, 7,1 Md€ pour la cotisation vieillesse déplafonnée,
+6,2 Md€ pour la plafonnée. Chaque prélèvement a son assiette.</p></div>
+
+<div class="bloc"><h3>Projection</h3>
+<p>Trajectoire de référence : rapport du Conseil d’orientation des retraites de juin 2026 —
+dépenses de 14,1 points de PIB en 2025 et 15,3 en 2070, solde de −0,2 à −2,4 points.
+Productivité de 0,7 % par an, chômage à 7 % à partir de 2040.</p>
+<p>Cet outil ne refait pas la démographie : il infléchit celle du Conseil. La sensibilité à la
+productivité reproduit ses variantes publiées au dixième près.</p>
+<p>Espérances de vie : Insee 2025, avec une dérive calée sur les cibles 2070 du Conseil.</p></div>
+
+<div class="bloc"><h3>Effets d’un décalage de l’âge</h3>
+<p>Quatre évaluations de la réforme de 2010 fondent le sous-modèle. Cour des comptes,
+février 2025 : l’âge effectif a progressé de 2,1 ans mais la durée passée en emploi de
+1 an et 7 mois seulement. Institut des politiques publiques : 20 à 25 points d’emploi en plus,
+mais 12 à 15 points de chômage indemnisé. Dubois et Koubi, 2017 : environ 64 % vers l’emploi.
+Drees, 2016 : 1,2 à 1,5 Md€ de surcoût d’invalidité et 600 M€ de minima sociaux.</p></div>
+
+<h2>Deux paramètres à confirmer</h2>
+<div class="bloc">
+<p><b>Le plafond de l’abattement de 10 %</b> est retenu par foyer fiscal. Trois sources sur
+quatre le confirment. L’interprétation inverse sous-estimerait la perte d’impôt sur les
+déciles hauts.</p>
+<p><b>Le seuil de CSG au taux médian à deux parts</b> a été arbitré à 40 604 €, contre 39 886 €
+selon d’autres sources. Le seuil retenu étant le plus haut, le retour de CSG est minoré et
+l’économie affichée majorée.</p></div>
+
+<h2>Une controverse que cet outil ne tranche pas</h2>
+<div class="bloc">
+<p>On lit souvent que les retraites des fonctionnaires seraient comptées deux fois. C’est
+inexact : les transferts entre administrations sont consolidés. Le désaccord porte sur la
+contribution employeur de l’État, portée à 82,28 % du traitement brut en 2026 contre environ
+28 % dans le privé. Cotisation, ou subvention d’équilibre déguisée ?</p>
+<div class="deux">
+  <div class="voix a"><h4>Lecture « transparence »</h4>
+  <p>Le taux élevé révèle le coût complet du travail public, habituellement sous-estimé.
+  Pas de déficit caché ; le déséquilibre vient de la baisse du nombre de fonctionnaires.
+  Position défendue notamment par le Conseil d’analyse économique.</p></div>
+  <div class="voix b"><h4>Lecture « subvention »</h4>
+  <p>Seule la part correspondant au taux du privé mérite le nom de cotisation. Au-delà, c’est
+  une subvention financée par l’impôt, qui masque le déficit réel.
+  Position défendue notamment par la Fondation IFRAP.</p></div>
+</div>
+<p>Le choix entre ces deux lectures déplace le déficit affiché de plusieurs dizaines de
+milliards. Aucun calcul ne le tranche : c’est une convention comptable.</p></div>
+
+<h2>Ce qui manque encore</h2>
+<div class="bloc">
+<p><b>Le sommet de la distribution.</b> La Drees regroupe tout au-dessus de 4 500 € sans le
+ventiler. Cette tranche est décrite par une loi de Pareto calée sur une moyenne supposée.
+Au-delà de 6 000 €, l’outil donne un ordre de grandeur, pas un chiffrage.</p>
+<p><b>La structure des ménages.</b> L’impôt se liquide au foyer fiscal et le minimum vieillesse
+se calcule sur les ressources du ménage ; cet outil raisonne par individu.</p>
+<p><b>Les prestations sous conditions de ressources.</b> Aides au logement, complémentaire santé
+solidaire, exonérations locales : toutes réduiraient l’économie. Les résultats sont donc des
+bornes hautes.</p>
+<p><b>Le bouclage macroéconomique.</b> Une baisse des pensions réduit la consommation, donc la
+TVA. Effet de second tour non modélisé, qui va lui aussi vers une économie plus faible.</p></div>
+
+<h2>Licence</h2>
+<div class="bloc">
+<p>Les données de la Drees sont diffusées sous Licence ouverte 2.0, qui impose de mentionner
+la source à chaque utilisation : « Source : Drees, enquête annuelle auprès des caisses de
+retraite (EACR), enrichie avec le modèle Ancetre ». Cette mention doit accompagner toute
+publication de résultats.</p>
+<p class="pied">Outil d’aide à la décision. Ne constitue ni un chiffrage officiel, ni un conseil,
+ni une estimation de droits individuels à retraite. Paramètres arrêtés en septembre 2026.</p></div>`;
+
+/* ==========================================================================
+   RAPPORT PARTAGEABLE
+   ========================================================================== */
+function lienScenario(){ return location.origin+location.pathname+'#'+encoderEtat(); }
+function encoderEtat(){
+  return [E.taux.map(x=>Math.round(x*100)).join('.'), Math.round(E.plafond),
+    Math.round(E.plancher), Math.round(E.aspaMontant*100), Math.round(E.aspaRecours*100),
+    E.variante.charAt(0), Math.round(PJ.idx*10000)+'d'+PJ.idxDuree,
+    Math.round(PJ.age*12)+'q'+PJ.duree,
+    Math.round(PJ.cotSal*10)+'_'+Math.round(PJ.cotPat*10)+'_'+Math.round(PJ.csg*10),
+    Math.round(PJ.emploi*100), Math.round(PJ.prod*1000), MODE_SIMPLE?'s':'e'].join('~');
+}
+function decoderEtat(s){
+  try{
+    const v=s.split('~'); if(v.length<12) return false;
+    E.taux=v[0].split('.').map(x=>(+x)/100);
+    E.plafond=+v[1]; E.plancher=+v[2]; E.aspaMontant=(+v[3])/100; E.aspaRecours=(+v[4])/100;
+    E.variante={b:'basse',c:'centrale',h:'haute'}[v[5]]||'centrale';
+    const a=String(v[6]).split('d'); PJ.idx=(+a[0])/10000; PJ.idxDuree=+(a[1]||5);
+    const b=String(v[7]).split('q'); PJ.age=(+b[0])/12; PJ.duree=+(b[1]||0);
+    const c=String(v[8]).split('_'); PJ.cotSal=(+c[0])/10; PJ.cotPat=(+c[1])/10;
+    PJ.csg=c.length>2?(+c[2])/10:0;
+    PJ.emploi=(+v[9])/100; PJ.prod=(+v[10])/1000; MODE_SIMPLE=v[11]!=='e';
+    return true;
+  }catch(e){ return false; }
+}
+function resumeTexte(){
+  const R=chiffrer(E.variante), T=trajectoire(), prel=effetPrelevements();
+  const nets=Object.keys(POP.variantes).map(v=>chiffrer(v).nette+prel);
+  const p70=T[T.length-1], l=[];
+  l.push('SIMULATION — RÉFORME DES RETRAITES');
+  l.push(nomScenario()); l.push('');
+  l.push('MESURES');
+  const m=[];
+  E.taux.forEach((t,i)=>{if(t!==0) m.push(`• Décile ${i+1} : ${sgn(t)}${Math.abs(t*100).toFixed(0)} % marginal`);});
+  if(E.plafond>0) m.push('• Plafond : '+eur(E.plafond)+'/mois');
+  if(E.plancher>0) m.push('• Plancher : '+eur(E.plancher)+'/mois');
+  if(E.aspaMontant!==1043.59) m.push('• Minimum vieillesse : '+(E.aspaMontant<=0?'supprimé':eur(E.aspaMontant)));
+  if(PJ.idx>0) m.push(`• Sous-indexation : ${(PJ.idx*100).toFixed(2).replace('.',',')} pt/an sur ${PJ.idxDuree} ans`);
+  if(PJ.age>0) m.push('• Âge légal : 64 ans → '+ageTexte(AGES.cible+PJ.age*12));
+  if(PJ.duree!==0) m.push('• Durée requise : 172 → '+(DUREE.requiseActuelle+PJ.duree)+' trimestres');
+  if(PJ.cotSal!==0) m.push(`• Cotisations salariales : ${sgn(PJ.cotSal)}${Math.abs(PJ.cotSal).toFixed(1)} pt`);
+  if(PJ.cotPat!==0) m.push(`• Cotisations patronales : ${sgn(PJ.cotPat)}${Math.abs(PJ.cotPat).toFixed(1)} pt`);
+  if(PJ.csg!==0) m.push(`• CSG : ${sgn(PJ.csg)}${Math.abs(PJ.csg).toFixed(1)} pt`);
+  l.push(m.length?m.join('\n'):'  (aucune)'); l.push('');
+  l.push('EFFETS');
+  l.push('• Dès la première année : '+mdS(Math.min(...nets))+' à '+mdS(Math.max(...nets)));
+  l.push('• Soit '+((R.nette+prel)/DEFICIT_COR*100).toFixed(0)+' % du déficit 2025');
+  l.push('• Solde 2070 : '+sgn(p70.solde)+Math.abs(p70.solde).toFixed(2).replace('.',',')
+    +' pt de PIB, contre −2,40 sans réforme');
+  l.push('• Retraités sous le seuil de pauvreté : '+(R.pauvAp/1e6).toFixed(2).replace('.',',')+' M');
+  l.push(''); l.push('Testez votre propre scénario :'); l.push(lienScenario());
+  return l.join('\n');
+}
+
+/* ==========================================================================
+   RAPPORT — document structuré, imprimable, porteur du lien
+   ========================================================================== */
+function construireRapport(){
+  const R=chiffrer(E.variante), T=trajectoire(), prel=effetPrelevements();
+  const nets=Object.keys(POP.variantes).map(v=>chiffrer(v).nette+prel);
+  const lo=Math.min(...nets), hi=Math.max(...nets), net=R.nette+prel;
+  const p70=T[T.length-1], p30=T.find(x=>x.an===2030), p50=T.find(x=>x.an===2050);
+  const q=quantiles(E.variante), w=poidsRel(E.variante), ss=seuils(q,w);
+  const eq=T.find(x=>x.an>2026&&x.solde>=0);
+  const pI=PJ.idx>0?1-Math.pow(1-PJ.idx,PJ.idxDuree):0;
+  const L=(k,v,c)=>`<div class="rap-lig ${c||''}"><span>${k}</span><span class="v num">${v}</span></div>`;
+  const pt=v=>sgn(v)+Math.abs(v).toFixed(2).replace('.',',')+' pt';
+
+  txt('rap-titre', nomScenario());
+  html('rap-meta', `Établi le ${new Date().toLocaleDateString('fr-FR',
+    {day:'numeric',month:'long',year:'numeric'})}<br>
+    Barèmes 2026 · Population Drees 2024 · Trajectoire COR juin 2026`);
+
+  html('rap-cle', `<div class="rap-cle">
+    <div style="font-size:.78rem;color:var(--brume)">Effet net dès la première année</div>
+    <div class="v num" style="color:${net>=0?'var(--gain)':'var(--perte)'}">${mdS(lo)} à ${mdS(hi)}</div>
+    <div style="font-size:.82rem;color:var(--encre-2);margin-top:.3rem">
+      Soit ${Math.abs(net/DEFICIT_COR*100).toFixed(0)} % du déficit du système constaté en 2025.
+      La fourchette reflète l’incertitude sur les pensions supérieures à 4 500 €, que la Drees
+      ne ventile pas.</div></div>`);
+
+  let m=''; let vide=true;
+  E.taux.forEach((t,i)=>{ if(t!==0){ vide=false;
+    const b=i===0?`moins de ${fr(ss[0])}`:i===9?`plus de ${fr(ss[8])}`:`${fr(ss[i-1])} à ${fr(ss[i])}`;
+    m+=L(`Décile ${i+1} <span style="color:var(--brume)">(${b} €/mois)</span>`,
+      sgn(t)+Math.abs(t*100).toFixed(0)+' % marginal'); }});
+  if(E.plafond>0){vide=false; m+=L('Plafond de pension', eur(E.plafond)+' /mois');}
+  if(E.plancher>0){vide=false; m+=L('Plancher de pension', eur(E.plancher)+' /mois');}
+  if(E.aspaMontant!==1043.59){vide=false;
+    m+=L('Minimum vieillesse', E.aspaMontant<=0?'supprimé':eur(E.aspaMontant)+' /mois');}
+  if(E.aspaRecours<1){vide=false; m+=L('Recours au minimum vieillesse', pct(E.aspaRecours));}
+  if(PJ.idx>0){vide=false; m+=L('Sous-indexation',
+    `${(PJ.idx*100).toFixed(2).replace('.',',')} pt/an pendant ${PJ.idxDuree} ans`);}
+  if(PJ.age>0){vide=false; m+=L('Âge légal', '64 ans → '+ageTexte(AGES.cible+PJ.age*12));}
+  if(PJ.duree!==0){vide=false; m+=L('Durée requise', '172 → '+(DUREE.requiseActuelle+PJ.duree)+' trimestres');}
+  if(PJ.cotSal!==0){vide=false; m+=L('Cotisations salariales',
+    `${sgn(PJ.cotSal)}${Math.abs(PJ.cotSal).toFixed(1).replace('.',',')} pt → ${(TAUX_SALARIAL+PJ.cotSal).toFixed(2).replace('.',',')} %`);}
+  if(PJ.cotPat!==0){vide=false; m+=L('Cotisations patronales',
+    `${sgn(PJ.cotPat)}${Math.abs(PJ.cotPat).toFixed(1).replace('.',',')} pt → ${(TAUX_PATRONAL+PJ.cotPat).toFixed(2).replace('.',',')} %`);}
+  if(PJ.csg!==0){vide=false; m+=L('CSG', `${sgn(PJ.csg)}${Math.abs(PJ.csg).toFixed(1).replace('.',',')} pt`);}
+  html('rap-mesures', `<h2>Les mesures</h2>`+(vide
+    ? `<p style="font-size:.86rem;color:var(--brume)">Aucune mesure appliquée.</p>`
+    : m+`<p style="font-size:.8rem;color:var(--brume);margin-top:.5rem">Les taux par décile sont
+      marginaux : ils ne portent que sur la fraction de pension située dans la tranche.
+      Ordre d’application : déciles, puis plafond, puis plancher.</p>`));
+
+  const dP=R.pauvAp-R.pauvAv;
+  html('rap-cascade', `<h2>De l’économie affichée à l’économie réelle</h2>`
+    + L('Effet brut sur les pensions', mdS(R.brute))
+    + L('Impôt sur le revenu', mdS(-R.ir))
+    + L('CSG, CRDS et CASA', mdS(-R.soc))
+    + L('Minimum vieillesse', mdS(-R.aspa))
+    + (Math.abs(prel)>1e8?L('Cotisations et CSG', mdS(prel)):'')
+    + L('Effet net', mdS(net), 't')
+    + (Math.abs(dP)>5000?L('Retraités passant sous le seuil de pauvreté',
+        (dP>0?'+':'−')+fr(Math.abs(dP)/1000)+' 000'):''));
+
+  html('rap-graph', `<h2>La trajectoire jusqu’en 2070</h2>
+    <div style="background:var(--encre);border-radius:2px;padding:.8rem .6rem">${courbe(T,640,165)}</div>
+    <p style="font-size:.8rem;color:var(--brume);margin:.4rem 0 .6rem">Trait plein : ce scénario.
+      Pointillé : trajectoire sans réforme.</p>
+    <h3 style="margin-top:.9rem">Dépenses de retraite projetées</h3>
+    ${tableProjRapport(T)}`
+    + L('Solde 2030', pt(p30.solde)+`  (réf. ${pt(p30.soldeRef)})`)
+    + L('Solde 2050', pt(p50.solde)+`  (réf. ${pt(p50.soldeRef)})`)
+    + L('Solde 2070', pt(p70.solde)+`  (réf. ${pt(p70.soldeRef)})`)
+    + L('Retour à l’équilibre', eq?String(eq.an):'non atteint d’ici 2070')
+    + L('Dépenses de retraite en 2070', p70.dep.toFixed(1).replace('.',',')+' % du PIB')
+    + L('Taux de remplacement en 2070', tauxRemplacement(2070,PJ.prod).toFixed(0)+' %')
+    + L('Productivité supposée', (PJ.prod*100).toFixed(1).replace('.',',')+' % par an'));
+
+  let d='', touche=false;
+  R.parD.forEach((x,i)=>{ const pe=x.net/x.eff + x.ap/x.eff*pI*12;
+    if(Math.abs(pe)>1){ touche=true;
+      d+=L(`Décile ${i+1} — ${fr(x.av/x.eff)} €/mois`,
+        (pe>0?'−':'+')+fr(Math.abs(pe))+' €'); }});
+  html('rap-deciles', `<h2>Qui supporte l’effort</h2>`+(touche
+    ? d+`<p style="font-size:.8rem;color:var(--brume);margin-top:.5rem">Perte nette annuelle,
+       après impôt, prélèvements sociaux et minimum vieillesse${pI>0?', sous-indexation comprise':''}.</p>`
+    : `<p style="font-size:.86rem;color:var(--brume)">Aucun décile n’est affecté.</p>`));
+
+  const f=[]; const F=(v,c,t)=>f.push(`<li><span class="n ${c||''}">${v}</span><span>${t}</span></li>`);
+  if(Math.abs(net)>1e8){ const g=net>0, v=Math.abs(net);
+    F((v/REPERES.pointCotisation/COR.pib2025*100).toFixed(1).replace('.',',')+' pt', g?'pos':'neg',
+      `de cotisation retraite — ce qu’il ${g?'ne faudrait pas prélever':'faudrait prélever en plus'} sur les salaires`);
+    F((v/REPERES.justice).toFixed(1).replace('.',',')+' ×','','le budget annuel de la Justice, 10,8 Md€');
+    F(pct(v/REPERES.ecole),'','du budget de l’Enseignement scolaire, 64,5 Md€');
+    F(pct(v/REPERES.detteEtat),'','de la charge de la dette de l’État, 58 Md€ par an');
+    F(eur(v/16.43e6/12),'','par retraité et par mois, sur 16,4 millions de retraités'); }
+  if(pI>0) F('−'+pct(pI,1).replace(' %',' %'),'neg',
+    `de pension pour tous après ${PJ.idxDuree} ans, soit ${eur(1936*(1-pI))} au lieu de 1 936 €`);
+  if(PJ.age>0) F(ageTexte(AGES.cible+PJ.age*12),'',
+    `d’âge légal contre 64 ans, atteint après ${(PJ.age*4).toFixed(0)} générations`);
+  html('rap-faits', f.length?`<h2>Ce que cela représente</h2><ul class="faits">${f.join('')}</ul>`:'');
+
+  html('rap-invite', `<div class="rap-invite"><b>Ce scénario est reproductible.</b>
+    Le lien ci-dessous rouvre le simulateur exactement dans cet état : chacun peut alors déplacer
+    les curseurs, tester une autre combinaison et produire son propre rapport.
+    <span class="lien">${lienScenario()}</span></div>`);
+  html('rap-pied', `<div class="pied">
+    <b>Sources.</b> Drees, enquête annuelle auprès des caisses de retraite enrichie du modèle
+    Ancetre ; échantillon interrégimes de retraités 2020 ; Conseil d’orientation des retraites,
+    rapport de juin 2026 ; loi de finances pour 2026 ; article L.136-8 du code de la sécurité
+    sociale. Repères budgétaires : rapports du Sénat sur le budget 2026.<br><br>
+    <b>Limites.</b> Les résultats sont des bornes hautes : aides au logement, complémentaire
+    santé solidaire et exonérations locales ne sont pas modélisées et réduiraient l’économie.
+    L’impôt est calculé par individu alors qu’il se liquide au foyer. Aucun changement de
+    comportement n’est simulé.<br><br>
+    Outil d’aide à la décision. Ne constitue ni un chiffrage officiel, ni un conseil.</div>`);
+}
+
+/* ==========================================================================
+   CÂBLAGE
+   ========================================================================== */
+function appliquerMode(){
+  document.body.classList.toggle('simple', MODE_SIMPLE);
+  $('m-simple').setAttribute('aria-pressed', MODE_SIMPLE);
+  $('m-expert').setAttribute('aria-pressed', !MODE_SIMPLE);
+  const cour=document.querySelector('.onglet[aria-selected="true"]');
+  if(MODE_SIMPLE && cour && cour.classList.contains('avance')) ouvrirOnglet('pilot');
+}
+function ouvrirOnglet(id){
+  ONGLET=id;
+  document.querySelectorAll('.onglet').forEach(t=>t.setAttribute('aria-selected', t.dataset.o===id));
+  ['pilot','inc','obj','cmp','meth'].forEach(x=>{const e=$(x); if(e) e.hidden=(x!==id);});
+  if(id==='meth' && !$('meth').dataset.prêt){ html('meth',METHODE); $('meth').dataset.prêt='1'; }
+  tout();
+}
+function message(b,t,ms){ const a=b.textContent; b.textContent=t;
+  setTimeout(()=>{b.textContent=a;}, ms||2200); }
+function afficherPourCopie(t){
+  html('rap-invite', `<div class="rap-invite"><b>Appui long pour sélectionner, puis copier :</b>
+    <pre style="white-space:pre-wrap;font-family:'IBM Plex Mono',monospace;font-size:.7rem;
+      margin-top:.5rem;user-select:all;-webkit-user-select:all">${
+      t.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</pre></div>`);
+}
+function ouvrirRapport(){
+  try{ construireRapport(); }
+  catch(err){ html('rap-cle', `<p style="color:var(--perte)"><b>Le rapport n’a pas pu être
+    construit.</b> ${err && err.message ? err.message : ''}</p>`); }
+  $('rapport').classList.add('on'); $('voile').classList.add('on'); $('rapport').scrollTop=0;
+}
+function fermerRapport(){ $('rapport').classList.remove('on'); $('voile').classList.remove('on'); }
+function brancher(id,fn){ const e=$(id); if(e) e.addEventListener('click',fn); }
+
+/* modes et onglets */
+brancher('m-simple',()=>{MODE_SIMPLE=true; appliquerMode(); tout();});
+brancher('m-expert',()=>{MODE_SIMPLE=false; appliquerMode(); tout();});
+document.querySelectorAll('.onglet').forEach(t=>t.addEventListener('click',()=>{
+  ouvrirOnglet(t.dataset.o); window.scrollTo({top:0,behavior:'smooth'});}));
+
+/* cumul */
+brancher('mode-remplacer',()=>{MODE_CUMUL=false; SCENARIOS=SCENARIOS.slice(-1);
+  $('mode-remplacer').setAttribute('aria-pressed','true');
+  $('mode-cumuler').setAttribute('aria-pressed','false'); tout();});
+brancher('mode-cumuler',()=>{MODE_CUMUL=true;
+  $('mode-remplacer').setAttribute('aria-pressed','false');
+  $('mode-cumuler').setAttribute('aria-pressed','true'); tout();});
+
+/* comparaison */
+function capturer(s){ const e=etatCourant(); e.nom=nomScenario(); COMPARE[s]=e;
+  rendreComparaison(); message($(s==='A'?'cp-a':'cp-b'),'Enregistré en '+s); }
+brancher('cp-a',()=>capturer('A')); brancher('cp-b',()=>capturer('B'));
+brancher('cp-la',()=>{if(COMPARE.A){restaurer(COMPARE.A); SCENARIOS=[COMPARE.A.nom]; tout();}});
+brancher('cp-lb',()=>{if(COMPARE.B){restaurer(COMPARE.B); SCENARIOS=[COMPARE.B.nom]; tout();}});
+brancher('cp-vider',()=>{COMPARE={A:null,B:null}; rendreComparaison();});
+
+/* rapport */
+brancher('rap-fermer',fermerRapport); brancher('voile',fermerRapport);
+brancher('rap-imprimer',()=>{try{window.print();}
+  catch(e){message($('rap-imprimer'),'Impression indisponible',3500);}});
+brancher('rap-partager',()=>{ const b=$('rap-partager'), t=resumeTexte();
+  if(navigator.share) navigator.share({title:'Simulation — réforme des retraites',
+    text:t, url:lienScenario()}).catch(()=>{});
+  else if(navigator.clipboard && location.protocol!=='file:')
+    navigator.clipboard.writeText(t).then(()=>message(b,'Résumé copié'))
+      .catch(()=>{afficherPourCopie(t); message(b,'Texte affiché ci-dessous',4000);});
+  else { afficherPourCopie(t); message(b,'Texte affiché ci-dessous',4000); }});
+brancher('rap-copier',()=>{ const b=$('rap-copier'), t=resumeTexte();
+  if(navigator.clipboard && location.protocol!=='file:')
+    navigator.clipboard.writeText(t).then(()=>message(b,'Copié'))
+      .catch(()=>{afficherPourCopie(t); message(b,'Texte affiché ci-dessous',4000);});
+  else { afficherPourCopie(t); message(b,'Texte affiché ci-dessous',4000); }});
+
+/* démarrage */
+if(location.hash.length>3) decoderEtat(location.hash.slice(1));
+bâtir('lev-simple', LEV.simple);
+bâtir('lev-bornes', LEV.bornes);
+bâtir('lev-aspa', LEV.aspa);
+bâtir('lev-age', LEV.age);
+bâtir('lev-recettes', LEV.recettes);
+bâtir('lev-hyp', LEV.hyp);
+bâtir('lev-cible', LEV.cible, rendreCible);
+appliquerMode();
+tout();
+
+/* bouton de rapport, ajouté au bloc résultat après le premier rendu */
+(function(){
+  const b=document.createElement('button');
+  b.className='action'; b.id='btn-rapport'; b.textContent='Rapport à partager';
+  b.style.cssText='margin-top:1rem;background:var(--or-clair);border-color:var(--or-clair);color:var(--encre)';
+  b.addEventListener('click',ouvrirRapport);
+  $('res').after(b);
+})();
+
+</script>
+</body>
+</html>
