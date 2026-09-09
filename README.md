@@ -314,7 +314,27 @@ fonctionnalités.
 
 ---
 
-*Dernière mise à jour de ce document : 3 septembre 2026. Si tu reprends ce
+## Licence et citation
+
+Code, paramètres et analyses : **licence MIT** (voir `LICENSE`). Réutilisation
+libre, y compris commerciale, à condition de conserver la mention de paternité.
+
+Les données publiques sous-jacentes (EACR, Drees) restent sous **Licence
+Ouverte 2.0** et imposent, sur toute sortie publiée :
+
+    Source : Drees, enquête annuelle auprès des caisses de retraite (EACR),
+    enrichie avec le modèle Ancetre
+
+**Comment citer ce travail :**
+
+    Au, S. (2026). Simulateur de dépense publique — volet retraites.
+    https://github.com/ManZanau/retraites-simulateur
+
+Voir aussi `CITATION.cff` (GitHub affiche un bouton « Cite this repository »).
+
+---
+
+*Dernière mise à jour de ce document : 9 septembre 2026. Si tu reprends ce
 projet dans un nouveau chat, lis ce fichier, `docs/hypotheses.md`, lance
 `python3 run.py`, puis ouvre `app/retraites.html`. Tu n'as pas besoin de
 l'historique de conversation complet.*

@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+title: "Simulateur de dépense publique — volet retraites"
+message: >-
+  Si vous utilisez ce simulateur ou sa méthodologie, merci de le citer
+  comme indiqué ci-dessous.
+type: software
+authors:
+  - family-names: Au
+    given-names: Stanislas
+repository-code: "https://github.com/ManZanau/retraites-simulateur"
+abstract: >-
+  Outil de pilotage des retraites françaises : quantifie l'effet net d'une
+  mesure sur les finances publiques (effet immédiat et trajectoire jusqu'en
+  2070), en distinguant l'effet brut affiché de l'effet réel après impôt sur
+  le revenu, prélèvements sociaux et minimum vieillesse.
+keywords:
+  - retraites
+  - finances publiques
+  - fiscalité
+  - simulation
+  - France
+license: MIT
+date-released: 2026-09-09
