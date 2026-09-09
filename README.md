@@ -17,6 +17,8 @@ ce fichier + `docs/hypotheses.md` + `docs/inventaire_sources.md` suffisent.**
 open app/retraites.html          # ou double-clic
 
 # Le moteur Python : vérifie que tout fonctionne
+python3 -m venv .venv                      # environnement isolé (recommandé)
+source .venv/bin/activate                  # Windows : .venv\Scripts\activate
 pip install -r requirements.txt
 python3 run.py
 ```
@@ -24,6 +26,12 @@ python3 run.py
 `python3 run.py` fait tourner les 6 suites de tests et affiche un rapport.
 Doit afficher "tout est vert" partout. Si un test casse, c'est la première
 chose à corriger avant tout ajout.
+
+L'environnement isolé (`venv`) évite les collisions avec une installation
+Python système encombrée (une Anaconda, par exemple). Installation propre
+vérifiée le 2026-09-09 : Python 3.10, les 6 suites au vert. `test_app.py`
+demande Node.js ; sans Node, ce test se déclare non exécutable au lieu de
+passer à tort.
 
 ---
 
