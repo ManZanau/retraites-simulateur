@@ -142,10 +142,14 @@ moteurs Python, 30 contrôles sur l'application web (voir `test_app.py`).
 - **Taux de recours à l'ASPA** : fixé à 100 % par défaut (pilotable).
 - **Devenir de la cohorte reportée par un décalage d'âge** : 65 % restent en
   emploi par défaut (pilotable), fourchette littérature 62-75 %.
-- **3 paramètres non vérifiés contre le texte légal** (prochaine étape,
-  voir § Prochaines étapes) : plafond de l'abattement 10 % (par foyer ou
-  par personne ?), seuil CSG à 2 parts (40 604 ou 39 886 €), tables d'âge
-  légal (reconstituées, jamais confrontées aux décrets).
+- ~~**3 paramètres non vérifiés contre le texte légal**~~ — **résolus le
+  7-9 septembre 2026** : plafond de l'abattement 10 % = **par foyer** (4 439 €,
+  BOFiP art. 158-5-a) ; seuil CSG à 2 parts = **40 604 €** (Assurance retraite,
+  grille 2026) ; tables d'âge légal = **conformes** aux art. L. 161-17-2 et
+  L. 161-17-3 CSS (LFSS 2026, art. 105), vérifiées mot pour mot sur Légifrance.
+  Voir `parametres/parametres_fiscaux_2026.yaml` et
+  `parametres/baselines_retraites.yaml` (champs `note_verification` /
+  `reference_legale`).
 
 ### Valeurs de contrôle (figées dans `test_app.py`, ne doivent jamais bouger sans raison)
 
@@ -262,15 +266,21 @@ fonctionnalités.
 
 ## Prochaines étapes (par ordre de priorité déjà discuté)
 
-1. **Vérifier 3 paramètres contre le texte légal** (voir `docs/hypotheses.md`
-   § arbitrages) :
-   - Plafond de l'abattement 10% pensions : par foyer ou par personne ?
-     → BOFiP, pas Légifrance
-   - Seuil CSG médian à 2 parts : 40 604 € ou 39 886 € ?
-     → barème Urssaf / Assurance retraite
-   - Tables âge légal / durée : jamais confrontées aux décrets n°2026-344
-     et 2026-345 (7 mai 2026) ni à la circulaire Cnav 2026-07
-     → Légifrance + legislation.cnav.fr
+1. ~~**Vérifier 3 paramètres contre le texte légal**~~ — **fait (7-9 sept. 2026)** :
+   - Plafond de l'abattement 10 % pensions : **par foyer** (4 439 €). Source
+     BOFiP art. 158-5-a CGI + réponse ministérielle AN n°21770.
+   - Seuil CSG médian à 2 parts : **40 604 €** (débat 39 886 vs 40 604 tranché).
+     Source Assurance retraite, « Prélèvements sociaux en 2026 », MàJ 09/01/2026.
+     Grille complète 1 à 3 parts + supplément par demi-part ajoutés au YAML.
+   - Tables âge légal / durée : **conformes** aux art. L. 161-17-2 et
+     L. 161-17-3 CSS (LFSS 2026, art. 105), lus mot pour mot sur Légifrance.
+     Les décrets n°2026-344 / 2026-345 ne portent pas la grille générale
+     (carrière longue, fonction publique, Mayotte, handicap uniquement) —
+     piège documenté dans `baselines_retraites.yaml`. Carrière longue
+     « avant 20 ans » complétée depuis D. 351-1-1 II CSS.
+   - Reste en suspens : seuils CSG **outre-mer** (grille 2026 ajoutée mais
+     source secondaire unique, à recouper) ; version archivée de B0 non
+     recontrôlée ligne à ligne (contrefactuel).
 2. **Héberger** (Cloudflare Pages recommandé — gratuit, pas de plafond de
    bande passante). Sans hébergement, le lien de partage de scénario ne
    fonctionne pas pour un tiers (pointe vers `file://`).
