@@ -42,10 +42,27 @@
 # =============================================================================
 
 meta:
-  version: "0.1.0"
+  version: "0.2.0"
   date_creation: "2026-08-19"
+  date_verification: "2026-09-09"
   perimetre: "regime_general"
-  statut_verification: "NON VERIFIE - sources secondaires uniquement"
+  statut_verification: >
+    VERIFIE le 2026-09-09 contre le texte consolide sur Legifrance.
+    B1_suspension reproduit mot pour mot les articles L. 161-17-2 CSS (age
+    legal) et L. 161-17-3 CSS (duree d'assurance requise) dans leur redaction
+    issue de l'article 105 de la loi n° 2025-1403 du 30 decembre 2025
+    (LFSS 2026), en vigueur depuis le 31/12/2025, applicables aux pensions
+    prenant effet a compter du 1er septembre 2026. La carriere longue
+    "debut avant 20 ans" est completee depuis l'article D. 351-1-1 II CSS
+    (version en vigueur depuis le 01/09/2026, modifiee par le decret
+    n° 2026-345 du 7 mai 2026, art. 2).
+    Les decrets n° 2026-344 et n° 2026-345 ne contiennent PAS la grille
+    generale du regime general : 2026-345 traite la carriere longue, les
+    assures handicapes et Mayotte ; 2026-344 traite la fonction publique
+    (CNRACL et ouvriers de l'Etat). Voir autres_baremes_lies.
+    B0_reforme_2023 est coherent avec le calendrier de la loi n° 2023-270 du
+    14 avril 2023 ; il n'a pas ete recontrole ligne a ligne contre la version
+    archivee de l'article (contrefactuel, priorite moindre).
   regimes_non_couverts:
     - fonction_publique_etat
     - fonction_publique_territoriale_hospitaliere
@@ -80,6 +97,13 @@ B0_reforme_2023:
     Montée en charge de 3 mois par génération à partir des assurés nés à
     compter du 1er septembre 1961, jusqu'à 64 ans pour la génération 1968.
     Durée d'assurance portée à 172 trimestres dès la génération 1965.
+  reference_legale: >
+    Art. L. 161-17-2 et L. 161-17-3 CSS dans leur rédaction issue de la loi
+    n° 2023-270 du 14 avril 2023 (art. 10), ANTÉRIEURE à la LFSS 2026.
+    Contrefactuel : ne correspond à aucun droit applicable depuis le
+    01/09/2026. Valeurs cohérentes avec le calendrier publié de la réforme
+    2023 ; non recontrôlées ligne à ligne contre la version archivée de
+    l'article (priorité moindre — voir meta.statut_verification).
 
   age_legal_mois:
     # Générations antérieures : droit issu de la loi Touraine de 2014,
@@ -126,44 +150,90 @@ B1_suspension:
     date de dépôt du dossier. Une pension prenant effet avant le 2026-09-01
     relève de B0, même pour une génération concernée par la suspension.
 
+  reference_legale: >
+    Âge légal : art. L. 161-17-2 CSS, rédaction issue de la loi n° 2025-1403
+    du 30/12/2025 (LFSS 2026), art. 105 — en vigueur depuis le 31/12/2025,
+    applicable aux pensions prenant effet à compter du 01/09/2026. Bornes :
+    62 ans 3 mois pour les nés du 01/09/1961 au 31/12/1961 ; 62 ans 6 mois
+    pour 1962 ; 62 ans 9 mois pour les nés du 01/01/1963 au 31/03/1965 ;
+    63 ans pour les nés du 01/04/1965 au 31/12/1965 ; 63 ans 3 mois pour
+    1966 ; 63 ans 6 mois pour 1967 ; 63 ans 9 mois pour 1968 ; 64 ans à
+    compter du 01/01/1969.
+    Durée d'assurance : art. L. 161-17-3 CSS, même loi et même entrée en
+    vigueur. Bornes : 169 trimestres pour les nés du 01/09/1961 au
+    31/12/1962 ; 170 pour les nés du 01/01/1963 au 31/03/1965 ; 171 pour les
+    nés du 01/04/1965 au 31/12/1965 ; 172 à compter du 01/01/1966.
+    Vérifié mot pour mot sur Légifrance le 2026-09-09.
+
   age_legal_mois:
-    defaut_en_deca: 744    # 62 ans — loi Touraine, hors champ
-    1961T4: 747    # inchangé vs B0
-    1962:   750    # inchangé
-    1963:   753    # inchangé
-    1964:   753    # 62 ans 9 mois — gelé (B0 : 756)
-    1965T1: 753    # 62 ans 9 mois — gelé (B0 : 759)
-    1965T2+: 756   # 63 ans — reprise à compter du 01/04/1965
+    # Valeurs = art. L. 161-17-2 CSS (LFSS 2026). Vérifiées le 2026-09-09.
+    defaut_en_deca: 744    # 62 ans — nés avant le 01/09/1961 : rédaction antérieure, hors champ
+    1961T4: 747    # 62 ans 3 mois — en toute rigueur : nés du 01/09/1961 au 31/12/1961
+    1962:   750    # 62 ans 6 mois
+    1963:   753    # 62 ans 9 mois — borne légale 01/01/1963–31/03/1965
+    1964:   753    # 62 ans 9 mois — même borne légale (B0 : 756)
+    1965T1: 753    # 62 ans 9 mois — nés du 01/01/1965 au 31/03/1965 (B0 : 759)
+    1965T2+: 756   # 63 ans — nés du 01/04/1965 au 31/12/1965
     1966:   759    # 63 ans 3 mois (B0 : 762)
     1967:   762    # 63 ans 6 mois (B0 : 765)
     1968:   765    # 63 ans 9 mois (B0 : 768)
-    1969:   768    # 64 ans
+    1969:   768    # 64 ans — à compter du 01/01/1969
     defaut_au_dela: 768
 
   duree_assurance_trimestres:
-    defaut_en_deca: 168    # loi Touraine, hors champ
-    1961T4: 169
+    # Valeurs = art. L. 161-17-3 CSS (LFSS 2026). Vérifiées le 2026-09-09.
+    defaut_en_deca: 168    # nés avant le 01/09/1961 : hors champ
+    1961T4: 169    # borne légale 01/09/1961–31/12/1962
     1962:   169
-    1963:   170
-    1964:   170    # gelé (B0 : 171)
-    1965T1: 170    # gelé (B0 : 172)
-    1965T2+: 171   # (B0 : 172)
-    1966:   172    # aucun gain vs B0
+    1963:   170    # borne légale 01/01/1963–31/03/1965
+    1964:   170    # même borne légale (B0 : 171)
+    1965T1: 170    # nés du 01/01/1965 au 31/03/1965 (B0 : 172)
+    1965T2+: 171   # nés du 01/04/1965 au 31/12/1965 (B0 : 172)
+    1966:   172    # à compter du 01/01/1966 — aucun gain vs B0
     defaut_au_dela: 172
 
   carriere_longue:
-    statut: "INCOMPLET - à compléter"
-    perimetre_generations: [1964, 1970]
+    statut: "COMPLETE - verifie le 2026-09-09"
+    reference: >
+      Art. D. 351-1-1 CSS, version en vigueur depuis le 01/09/2026 (modifiee
+      par le decret n° 2026-345 du 7 mai 2026, art. 2). Applicable aux
+      pensions prenant effet a compter du 01/09/2026.
+    bornes_de_base_mois:
+      # D. 351-1-1 I CSS — age d'ouverture selon l'age de debut d'activite,
+      # hors adaptations transitoires du II.
+      debut_avant_16_ans: 696   # 58 ans
+      debut_avant_18_ans: 720   # 60 ans
+      debut_avant_20_ans: 744   # 62 ans
+      debut_avant_21_ans: 756   # 63 ans
     note: >
-      Grille distincte, couvrant deux générations de plus que le régime général.
-      Bornes réglementaires : art. D. 351-1-1 CSS — départ possible à 58 ans
-      (début avant 16 ans), 60 ans (avant 18 ans), 62 ans (avant 20 ans),
-      63 ans (avant 21 ans), sous réserve des dispositions transitoires.
-      Seuls deux points de la borne "avant 20 ans" sont documentés ici ;
-      la grille complète est à extraire du décret n° 2026-344.
+      Seule la borne "debut avant 20 ans" fait l'objet d'un calendrier
+      transitoire par generation (D. 351-1-1 II), pour les assures nes entre
+      le 01/09/1961 et le 31/12/1970. Les bornes 16, 18 et 21 ans ne sont pas
+      amenagees. Pour deux sous-periodes, le texte ne fixe pas un age en dur
+      mais "l'age de l'article L. 161-17-2 minore de 2 ans et 6 mois" : la
+      valeur ci-dessous est donc calculee a partir de la grille age_legal_mois
+      ci-dessus.
     borne_avant_20_ans_mois:
-      1964: 726    # 60 ans 6 mois — inchangé par la suspension
-      1970: 741    # 61 ans 9 mois (B0 : 744, soit 62 ans)
+      # Cle = periode de naissance. Valeurs en mois. Source : D. 351-1-1 II CSS.
+      1961_09_a_1963_08: 720   # 60 ans — nes du 01/09/1961 au 31/08/1963
+      1963_09_a_1963_12: 723   # 60 ans 3 mois — L.161-17-2 (753) moins 30 mois
+      1964:              726   # 60 ans 6 mois
+      1965_01_a_1965_11: 729   # 60 ans 9 mois
+      1965_12:           728   # 60 ans 8 mois — sous-periode specifique du texte
+      1966:              729   # 60 ans 9 mois — L.161-17-2 (759) moins 30 mois
+      1967:              732   # 61 ans — (762) moins 30 mois
+      1968:              735   # 61 ans 3 mois — (765) moins 30 mois
+      1969:              738   # 61 ans 6 mois — (768) moins 30 mois
+      1970:              741   # 61 ans 9 mois
+      a_compter_de_1971: 744   # 62 ans — retour a la borne de base du I 3°
+    handicap_duree_cotisee:
+      # D. 351-1-5 CSS, modifie par le decret n° 2026-345 art. 2 (2°).
+      note: >
+        Pour les assures nes avant le 01/01/1973, la duree d'assurance cotisee
+        exigee pour la retraite anticipee des travailleurs handicapes est
+        celle de l'art. L. 161-17-3 CSS dans sa redaction ANTERIEURE a la loi
+        du 14 avril 2023 (loi Touraine). Le I bis de D. 351-1-5 est abroge.
+        Non chiffre ici : population faible, hors coeur du simulateur.
 
 # =============================================================================
 # B2 — POST-2028 (hypothèse conventionnelle)
@@ -272,3 +342,47 @@ controles:
   - id: "plafond_duree"
     description: "La durée requise ne dépasse jamais 172 trimestres"
     attendu: "max(duree) == 172"
+
+# =============================================================================
+# AUTRES BARÈMES LIÉS — hors régime général, pour mémoire
+# Non utilisés par le simulateur (périmètre = régime général). Documentés ici
+# parce que les sources secondaires les confondent régulièrement avec la
+# grille générale.
+# =============================================================================
+autres_baremes_lies:
+
+  mayotte_age_legal:
+    reference: >
+      Décret n° 2003-589 du 1er juillet 2003, art. 2, 9° à 14°, dans leur
+      rédaction issue du décret n° 2026-345 du 7 mai 2026, art. 3.
+      Applicable aux pensions prenant effet à compter du 01/09/2026.
+    note: >
+      C'est la grille de l'ÂGE LÉGAL À MAYOTTE, PAS celle du régime général.
+      Le décret n° 2026-345 art. 3 la donne sous forme de tableau propre, ce
+      qui la rend facile à prendre à tort pour un barème "carrière longue" ou
+      "régime général". Elle ne l'est pas.
+    age_legal_mois:
+      1963_01_a_1965_06: 750   # 62 ans 6 mois
+      1965_07_a_1965_12: 753   # 62 ans 9 mois
+      1966: 756                # 63 ans
+      1967: 759                # 63 ans 3 mois
+      1968: 762                # 63 ans 6 mois
+      1969: 765                # 63 ans 9 mois
+
+  fonction_publique:
+    reference: >
+      Décret n° 2026-344 du 7 mai 2026 (CNRACL et ouvriers de l'État),
+      modifiant les décrets n° 2003-1306, n° 2004-1056 et n° 2023-435 ;
+      art. D. 16-1 du code des pensions civiles et militaires de retraite
+      (fonction publique de l'État, catégorie sédentaire) modifié par le
+      décret n° 2026-345 art. 1.
+    note: >
+      La catégorie sédentaire suit l'âge légal de droit commun (L. 161-17-2).
+      Pour les catégories active et super-active, le décret n° 2026-344
+      décale d'une génération l'âge d'application du coefficient de
+      majoration : catégorie active, borne des 59 ans repoussée de la
+      génération 1973 à la génération 1974 ; super-active, borne des 54 ans
+      de 1978 à 1979. Durée d'assurance requise pour la catégorie active :
+      montée par paliers, 169 trim. pour les nés du 01/09/1966 au 31/12/1967,
+      170 pour 01/01/1968–31/03/1970, 171 pour 01/04/1970–31/12/1970, 172 à
+      compter du 01/01/1971. Non modélisé (hors périmètre régime général).
