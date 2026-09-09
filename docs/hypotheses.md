@@ -3,7 +3,7 @@
 *Document vivant. Toute hypothèse introduite dans le modèle doit y figurer,
 avec sa source, son millésime et le sens du biais qu'elle induit.*
 
-Dernière mise à jour : 19 août 2026
+Dernière mise à jour : 9 septembre 2026
 
 ---
 
@@ -46,37 +46,36 @@ biais est inutilisable pour un chiffrage.
 
 ## 2. Arbitrages — sources divergentes, choix explicite
 
-### 2.1 Seuil de CSG au taux médian, deux parts
+### 2.1 Seuil de CSG au taux médian, deux parts — **RÉSOLU le 9 septembre 2026**
 
-- **Valeur retenue** : 40 604 €
-- **Alternative écartée** : 39 886 € (deux sources sur trois)
-- **Décidé le** : 19 août 2026
-- **Sens du biais** : le seuil retenu étant le plus haut, davantage de foyers
-  restent à 6,6 % au lieu de basculer à 8,3 %. Le retour de CSG est donc
-  **minoré** et l'économie nette d'une réforme **majorée**. Hypothèse
-  favorable au rendement des coupes.
-- **À faire** : confirmer sur la grille officielle Assurance retraite ou URSSAF.
+- **Valeur retenue** : 40 604 € — **confirmée**
+- **Alternative écartée** : 39 886 €
+- **Source** : Assurance retraite, « Prélèvements sociaux en 2026 : augmentation
+  des seuils », mise à jour du 09/01/2026. Grille officielle par nombre de parts
+  (1 / 2 / 2,5 / 3), plus le supplément par demi-part (3 484 / 4 555 / 7 066 €),
+  reportée dans `parametres_fiscaux_2026.yaml`.
+- **Sens du biais** : nul, la valeur est désormais sourcée. Pour mémoire, la
+  valeur retenue était déjà la bonne.
 
-### 2.2 Plafond de l'abattement de 10 % sur les pensions
+### 2.2 Plafond de l'abattement de 10 % sur les pensions — **RÉSOLU le 7 septembre 2026**
 
 - **Valeur retenue** : 4 439 € **par foyer fiscal**, minimum 454 € par pensionné
+  — **confirmée**
 - **Alternative écartée** : plafond individuel, doublé pour un couple
-- **Fondement** : art. 158-5-a CGI ; trois sources sur quatre ; cohérent avec le
-  contraste explicite entre les 14 555 € des salariés (individuels) et les
-  4 439 € des retraités (mutualisés)
-- **Sens du biais** : si l'interprétation retenue était fausse, l'abattement
-  serait sous-estimé de 4 439 € par couple concerné, donc la perte d'IR
-  **surestimée** sur les déciles hauts.
-- **Criticité** : élevée. C'est le paramètre à vérifier en priorité.
+- **Source** : BOFiP (art. 158-5-a CGI) + réponse ministérielle à la question
+  écrite AN n°21770. Le plafond s'applique bien par foyer fiscal, non doublé en
+  imposition commune.
+- **Sens du biais** : nul, désormais sourcé.
 
-### 2.3 Lissage des taux de CSG
+### 2.3 Lissage des taux de CSG — **RÉSOLU le 9 septembre 2026**
 
 - **Règle retenue** : la condition de dépassement sur deux années consécutives
-  ne s'applique qu'au passage 3,8 % → 6,6 %
+  ne protège que le passage vers le taux médian (depuis le taux réduit).
+  **Aucun** lissage entre taux médian (6,6 %) et taux normal (8,3 %) : passage
+  immédiat. — **confirmée**
 - **Alternative écartée** : règle générale à tous les franchissements
-- **Fondement** : une source syndicale circonstanciée, militant pour l'extension
-  de la règle — ce qui n'aurait pas de sens si elle était déjà générale
-- **À faire** : vérifier à l'art. L.136-8 CSS.
+- **Source** : Assurance retraite, « Prélèvements sociaux en 2026 ». La version
+  restrictive déjà retenue était la bonne.
 
 ### 2.4 Mode de sortie de la suspension au 1er janvier 2028
 
@@ -85,6 +84,44 @@ biais est inutilisable pour un chiffrage.
 - **Amplitude** : 15 mois d'âge légal sur les générations 1969 et suivantes
 - **Règle** : tout chiffrage à horizon 2028+ doit être publié sous forme de
   **fourchette balayant les trois modes**, jamais sous un mode unique.
+
+### 2.5 Tables d'âge légal et de durée d'assurance — **RÉSOLU le 9 septembre 2026**
+
+- **Statut** : les tables du baseline B1 (droit en vigueur) reproduisaient déjà
+  mot pour mot le texte consolidé. Aucune valeur corrigée.
+- **Source** : art. L. 161-17-2 CSS (âge légal) et L. 161-17-3 CSS (durée),
+  rédaction issue de la loi n° 2025-1403 du 30/12/2025 (LFSS 2026), art. 105,
+  en vigueur depuis le 31/12/2025, applicables aux pensions prenant effet à
+  compter du 01/09/2026. Lus sur Légifrance.
+- **Piège écarté** : les décrets n° 2026-344 et n° 2026-345 du 7 mai 2026 **ne
+  contiennent pas** la grille générale du régime général. 2026-345 traite la
+  carrière longue (art. D. 351-1-1 II CSS), les assurés handicapés et l'âge
+  légal **à Mayotte** (décret 2003-589) ; 2026-344 traite la **fonction
+  publique** (CNRACL, ouvriers de l'État). La grille générale est dans la loi.
+  Le tableau « propre » de l'art. 3 du décret 2026-345 (62 ans 6 mois pour
+  1963–mi-1965, etc.) est la grille **Mayotte**, d'où les contradictions
+  apparentes entre sources secondaires.
+- **Complété** : carrière longue « début avant 20 ans », table complète
+  1961–1971 depuis D. 351-1-1 II CSS ; grilles Mayotte et fonction publique
+  documentées pour mémoire dans `baselines_retraites.yaml`
+  (`autres_baremes_lies`).
+
+### 2.6 Abattement de 10 % sur les salaires — **RÉSOLU le 7 septembre 2026**
+
+- **Valeur retenue** : 14 555 € (et non 14 556 €), minimum 509 € — **confirmée**
+- **Source** : sources concordantes citant impots.gouv.fr. La valeur 14 556 €
+  était un arrondi erroné. Ne concerne que les foyers en cumul emploi-retraite.
+
+### 2.7 Seuils de CSG outre-mer — **PARTIELLEMENT RÉSOLU, à recouper**
+
+- **Statut** : une grille 2026 a été renseignée (deux zones : Antilles-Guyane
+  hors Guyane / Guyane), champ `prelevements_sociaux.seuils_rfr.outre_mer`.
+- **Fragilité** : source secondaire unique (aesio.fr). Confiance `a_verifier`.
+  Tant qu'elle n'est pas recoupée avec service-public.fr ou impots.gouv.fr, le
+  simulateur doit continuer de refuser les DROM. Mayotte non couverte.
+- **Repère** : le seuil du taux normal (8,3 %) est identique à la métropole
+  (26 472 € pour 1 part, 40 604 € pour 2 parts) ; seuls les seuils inférieurs
+  sont relevés.
 
 ---
 
