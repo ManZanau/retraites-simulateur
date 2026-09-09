@@ -327,7 +327,7 @@ Ouverte 2.0** et imposent, sur toute sortie publiée :
 
 **Comment citer ce travail :**
 
-    Au, S. (2026). Simulateur de dépense publique — volet retraites.
+    Aurain, S. (2026). Simulateur de dépense publique — volet retraites.
     https://github.com/ManZanau/retraites-simulateur
 
 Voir aussi `CITATION.cff` (GitHub affiche un bouton « Cite this repository »).

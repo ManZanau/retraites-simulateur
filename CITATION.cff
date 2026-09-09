@@ -5,7 +5,7 @@ message: >-
   comme indiqué ci-dessous.
 type: software
 authors:
-  - family-names: Au
+  - family-names: Aurain
     given-names: Stanislas
 repository-code: "https://github.com/ManZanau/retraites-simulateur"
 abstract: >-
