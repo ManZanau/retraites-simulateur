@@ -196,7 +196,7 @@ body:not(.simple) .simple-seul{display:none!important}
       <button id="m-expert" aria-pressed="false">Version détaillée</button>
     </div>
     <p class="compteur" id="compteur-appareils" aria-live="polite"
-       title="Une ouverture par appareil : rouvrir le simulateur sur le même navigateur ne recompte pas. Changer de navigateur ou d'appareil, si."></p>
+       title="Connexions différentes : une par appareil, rouvrir depuis le même navigateur ne recompte pas. Rapports partagés : comptés à chaque partage ou copie du rapport."></p>
   </div>
 </header>
 
@@ -2043,29 +2043,62 @@ tout();
   $('res').after(b);
 })();
 
-/* Compteur d'appareils — approximatif, sans traceur ni cookie tiers.
-   Un appareil = un navigateur qui n'a pas encore ouvert le simulateur
-   (marqué dans le localStorage local, jamais transmis). Rouvrir depuis le
-   même navigateur ne recompte pas ; un autre navigateur ou appareil, si.
-   Échoue silencieusement hors ligne ou si le service est indisponible :
+/* Compteurs — connexions différentes + rapports partagés. Approximatifs,
+   sans traceur ni cookie tiers, sans donnée personnelle transmise au-delà
+   de l'IP inhérente à toute requête web.
+   - Connexions : un appareil = un navigateur qui n'a pas encore ouvert le
+     simulateur (marqué dans le localStorage local, jamais transmis).
+     Rouvrir depuis le même navigateur ne recompte pas.
+   - Rapports partagés : incrémenté à chaque clic sur "Partager" ou "Copier"
+     dans le rapport (pas à l'ouverture du rapport, pas à l'impression).
+   Échoue toujours silencieusement (hors ligne, service indisponible) :
    ça n'affecte jamais le fonctionnement du simulateur. */
 (function(){
   try{
     const el = document.getElementById('compteur-appareils');
     if(!el) return;
-    const ESPACE = 'retraites-simulateur-manzanau', CLE = 'ouvertures';
+    const ESPACE = 'retraites-simulateur-manzanau';
+    const CLE_CONNEXIONS = 'ouvertures', CLE_RAPPORTS = 'rapports-partages';
     const MARQUEUR = 'rs_appareil_compte_v1';
+
+    let nConnexions = null, nRapports = null;
+    function rendre(){
+      const morceaux = [];
+      if(nConnexions !== null) morceaux.push(nConnexions.toLocaleString('fr-FR')
+        + (nConnexions > 1 ? ' connexions différentes' : ' connexion différente'));
+      if(nRapports !== null) morceaux.push(nRapports.toLocaleString('fr-FR')
+        + (nRapports > 1 ? ' rapports partagés' : ' rapport partagé'));
+      el.textContent = morceaux.join(' · ');
+    }
+
     const dejaCompte = localStorage.getItem(MARQUEUR);
-    const action = dejaCompte ? 'get' : 'hit';
-    fetch(`https://abacus.jasoncameron.dev/${action}/${ESPACE}/${CLE}`)
+    const actionConnexion = dejaCompte ? 'get' : 'hit';
+    fetch(`https://abacus.jasoncameron.dev/${actionConnexion}/${ESPACE}/${CLE_CONNEXIONS}`)
       .then(r => r.ok ? r.json() : Promise.reject(r))
       .then(d => {
-        const n = Number(d.value) || 0;
-        el.textContent = n.toLocaleString('fr-FR')
-          + (n > 1 ? ' appareils ont ouvert ce simulateur' : ' appareil a ouvert ce simulateur');
+        nConnexions = Number(d.value) || 0;
         if(!dejaCompte) localStorage.setItem(MARQUEUR, '1');
+        rendre();
       })
       .catch(() => {});
+
+    fetch(`https://abacus.jasoncameron.dev/get/${ESPACE}/${CLE_RAPPORTS}`)
+      .then(r => r.ok ? r.json() : Promise.reject(r))
+      .then(d => { nRapports = Number(d.value) || 0; rendre(); })
+      .catch(() => {});
+
+    function compterPartage(){
+      try{
+        fetch(`https://abacus.jasoncameron.dev/hit/${ESPACE}/${CLE_RAPPORTS}`)
+          .then(r => r.ok ? r.json() : Promise.reject(r))
+          .then(d => { nRapports = Number(d.value) || 0; rendre(); })
+          .catch(() => {});
+      }catch(e){}
+    }
+    ['rap-partager','rap-copier'].forEach(id => {
+      const b = document.getElementById(id);
+      if(b) b.addEventListener('click', compterPartage);
+    });
   }catch(e){/* localStorage indisponible (navigation privée, etc.) : tant pis */}
 })();
 
