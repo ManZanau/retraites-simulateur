@@ -28,6 +28,7 @@ body{background:var(--papier);color:var(--encre);
 .tete h1{font-size:clamp(1.45rem,5.2vw,2.05rem);font-weight:700;letter-spacing:-.028em;
   line-height:1.1;max-width:20ch}
 .tete p{font-size:.94rem;line-height:1.5;color:#B9C6DC;margin-top:.55rem;max-width:54ch}
+.tete .compteur{font-size:.78rem;color:#7E8FAE;margin-top:.9rem;min-height:1.1em}
 .modes{display:flex;gap:1.4rem;margin-top:1.15rem;border-bottom:1px solid rgba(255,255,255,.14)}
 .modes button{background:none;border:0;cursor:pointer;padding:.7rem 0 .6rem;font:inherit;
   font-size:.85rem;font-weight:600;color:rgba(255,255,255,.5);border-bottom:2px solid transparent;
@@ -194,6 +195,8 @@ body:not(.simple) .simple-seul{display:none!important}
       <button id="m-simple" aria-pressed="true">Version simple</button>
       <button id="m-expert" aria-pressed="false">Version détaillée</button>
     </div>
+    <p class="compteur" id="compteur-appareils" aria-live="polite"
+       title="Une ouverture par appareil : rouvrir le simulateur sur le même navigateur ne recompte pas. Changer de navigateur ou d'appareil, si."></p>
   </div>
 </header>
 
@@ -2038,6 +2041,32 @@ tout();
   b.style.cssText='margin-top:1rem;background:var(--or-clair);border-color:var(--or-clair);color:var(--encre)';
   b.addEventListener('click',ouvrirRapport);
   $('res').after(b);
+})();
+
+/* Compteur d'appareils — approximatif, sans traceur ni cookie tiers.
+   Un appareil = un navigateur qui n'a pas encore ouvert le simulateur
+   (marqué dans le localStorage local, jamais transmis). Rouvrir depuis le
+   même navigateur ne recompte pas ; un autre navigateur ou appareil, si.
+   Échoue silencieusement hors ligne ou si le service est indisponible :
+   ça n'affecte jamais le fonctionnement du simulateur. */
+(function(){
+  try{
+    const el = document.getElementById('compteur-appareils');
+    if(!el) return;
+    const ESPACE = 'retraites-simulateur-manzanau', CLE = 'ouvertures';
+    const MARQUEUR = 'rs_appareil_compte_v1';
+    const dejaCompte = localStorage.getItem(MARQUEUR);
+    const action = dejaCompte ? 'get' : 'hit';
+    fetch(`https://abacus.jasoncameron.dev/${action}/${ESPACE}/${CLE}`)
+      .then(r => r.ok ? r.json() : Promise.reject(r))
+      .then(d => {
+        const n = Number(d.value) || 0;
+        el.textContent = n.toLocaleString('fr-FR')
+          + (n > 1 ? ' appareils ont ouvert ce simulateur' : ' appareil a ouvert ce simulateur');
+        if(!dejaCompte) localStorage.setItem(MARQUEUR, '1');
+      })
+      .catch(() => {});
+  }catch(e){/* localStorage indisponible (navigation privée, etc.) : tant pis */}
 })();
 
 </script>
