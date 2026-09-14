@@ -1097,11 +1097,16 @@ function tout(){
   /* ---- bloc résultat ---- */
   const cls=v=>v>=0?'gain':'perte';
   const fourchette=Math.abs(hi-lo)>1e9;
+  /* Dépense « aujourd'hui » = 2025, même année que le déficit affiché juste
+     à côté. Calculée comme la table de projection (dep/100 * pib), pas une
+     valeur figée : elle doit rester synchronisée avec COR.pib2025 et
+     COR.dep si ces constantes de référence sont un jour révisées. */
+  const dep2025=T.find(p=>p.an===2025);
   html('res', !actif
     ? `<div class="res-lig">
          <div class="res-bloc"><div class="res-lib">Dépense de retraite aujourd’hui</div>
-           <div class="res-val num">422 Md€</div>
-           <div class="res-app">14,1 % du produit intérieur brut</div></div>
+           <div class="res-val num">${fr(dep2025.dep/100*pib(2025)/1e9)} Md€</div>
+           <div class="res-app">${dep2025.dep.toFixed(1).replace('.',',')} % du produit intérieur brut</div></div>
          <div class="res-bloc"><div class="res-lib">Déficit du système en 2025</div>
            <div class="res-val num perte">5,1 Md€</div>
            <div class="res-app">2,4 points de PIB attendus en 2070</div></div>
