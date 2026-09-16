@@ -228,7 +228,9 @@ body:not(.simple) .simple-seul{display:none!important}
     <div class="note" id="actifs"></div>
 
     <h2>Montants des pensions</h2>
-    <p class="sous">Les taux sont marginaux : comme dans un barème d'impôt, un taux ne porte que sur la fraction de pension située dans sa tranche.</p>
+    <p class="sous">Les taux sont marginaux : comme dans un barème d'impôt, un taux ne porte que sur la fraction de pension située dans sa tranche.
+      Montants <b>bruts</b>, pension <b>totale</b> (droit direct + réversion + majorations) — donc plus élevés que le seul droit direct
+      souvent cité ailleurs (1 705 €/mois en moyenne, contre environ 1 900 € ici, réversion comprise).</p>
     <div class="groupe" id="lev-deciles"></div>
     <div class="groupe" id="lev-bornes"></div>
     <div class="note" id="mot-ordre"></div>
@@ -503,7 +505,7 @@ const COR = {
      Les années intermédiaires sont interpolées. */
   dep:[14.1,14.1,14.1,14.0,14.2,14.4,14.8,15.3],
   res:[13.9,13.9,13.7,13.4,13.3,13.2,13.0,12.9],
-  pib2025:2900e9,
+  pib2025:2991.1e9,   /* Insee, comptes de la Nation 2025, publiés le 29/05/2026 */
   /* DÉCOMPOSITION DE LA CROISSANCE DU PIB NOMINAL
        PIB en valeur = productivité + emploi + inflation
 
@@ -947,13 +949,13 @@ function poseGroupe(g,val){GROUPES[g].forEach(i=>{E.taux[i]=val;});}
    ========================================================================== */
 const LEV={
   simple:[
-    {id:'g-bas', nom:'Petites pensions', det:'moins de 1 270 € par mois · 4,9 M de personnes',
+    {id:'g-bas', nom:'Petites pensions', det:'moins de 1 270 € bruts par mois · 4,9 M de personnes',
      min:-30,max:30,pas:1, lire:()=>litGroupe('bas')*100, poser:v=>poseGroupe('bas',v/100),
      aff:v=>v===0?'0 %':sgn(v)+Math.abs(v)+' %', signe:true},
-    {id:'g-moy', nom:'Pensions moyennes', det:'de 1 270 à 2 700 € · 6,6 M de personnes',
+    {id:'g-moy', nom:'Pensions moyennes', det:'de 1 270 à 2 700 € bruts · 6,6 M de personnes',
      min:-30,max:30,pas:1, lire:()=>litGroupe('moy')*100, poser:v=>poseGroupe('moy',v/100),
      aff:v=>v===0?'0 %':sgn(v)+Math.abs(v)+' %', signe:true},
-    {id:'g-haut', nom:'Hautes pensions', det:'plus de 2 700 € par mois · 4,9 M de personnes',
+    {id:'g-haut', nom:'Hautes pensions', det:'plus de 2 700 € bruts par mois · 4,9 M de personnes',
      min:-30,max:30,pas:1, lire:()=>litGroupe('haut')*100, poser:v=>poseGroupe('haut',v/100),
      aff:v=>v===0?'0 %':sgn(v)+Math.abs(v)+' %', signe:true},
     {id:'g-age', nom:'Âge de départ', det:'64 ans aujourd’hui',
