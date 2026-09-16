@@ -561,11 +561,13 @@ const ELAST = {
 
 
 function formatAge(a){
-  /* Affichage en années et trimestres, comme dans le débat public français. */
+  /* Affichage en années et trimestres, comme dans le débat public français.
+     Signé : + pour un report, − pour une avance (âge abaissé). */
   if(a===0) return '0';
-  const m=Math.round(a*12), an=Math.floor(m/12), mo=m%12;
-  if(an===0) return '+'+mo+' mois';
-  const partAn = an===1?'+1 an':'+'+an+' ans';
+  const signe=a>0?'+':'−';
+  const m=Math.round(Math.abs(a)*12), an=Math.floor(m/12), mo=m%12;
+  if(an===0) return signe+mo+' mois';
+  const partAn = an===1?signe+'1 an':signe+an+' ans';
   return mo===0 ? partAn : partAn+' '+mo+'m';
 }
 
@@ -955,7 +957,7 @@ const LEV={
      min:-30,max:30,pas:1, lire:()=>litGroupe('haut')*100, poser:v=>poseGroupe('haut',v/100),
      aff:v=>v===0?'0 %':sgn(v)+Math.abs(v)+' %', signe:true},
     {id:'g-age', nom:'Âge de départ', det:'64 ans aujourd’hui',
-     min:0,max:36,pas:3, lire:()=>PJ.age*12, poser:v=>{PJ.age=v/12;},
+     min:-36,max:36,pas:3, lire:()=>PJ.age*12, poser:v=>{PJ.age=v/12;},
      aff:v=>formatAge(v/12)},
     {id:'g-cot', nom:'Cotisations retraite', det:'28 % du salaire brut aujourd’hui',
      min:-30,max:30,pas:1, lire:()=>Math.round((PJ.cotSal+PJ.cotPat)*10),
@@ -980,8 +982,8 @@ const LEV={
   ],
   age:[
     {id:'x-age', nom:'Âge légal de départ', det:'64 ans pour la génération 1969 et suivantes',
-     min:0,max:48,pas:3, lire:()=>Math.round(PJ.age*12), poser:v=>{PJ.age=v/12;},
-     aff:v=>v===0?'inchangé':'+'+formatAge(v/12).replace('+','')},
+     min:-48,max:48,pas:3, lire:()=>Math.round(PJ.age*12), poser:v=>{PJ.age=v/12;},
+     aff:v=>v===0?'inchangé':formatAge(v/12)},
     {id:'x-duree', nom:'Durée d’assurance requise', det:'172 trimestres, soit 43 ans',
      min:-8,max:12,pas:1, lire:()=>PJ.duree, poser:v=>{PJ.duree=v;},
      aff:v=>v===0?'inchangée':sgn(v)+Math.abs(v)+' tr', signe:true},
@@ -1212,7 +1214,7 @@ function motSimple(R,net,lo,hi,T){
   let s='';
   if(qui.length) s+=`Cette combinaison ${net>=0?'retire':'apporte'} en moyenne et par an
     ${qui.join(', ')}.`;
-  if(PJ.age>0) s+=` L’âge légal passerait de 64 ans à ${ageTexte(AGES.cible+PJ.age*12)},
+  if(PJ.age!==0) s+=` L’âge légal passerait de 64 ans à ${ageTexte(AGES.cible+PJ.age*12)},
     au rythme d’un trimestre par génération.`;
   if(Math.abs(dP)>20000) s+=` <b>${fr(Math.abs(dP)/1000)} 000 retraités
     ${dP>0?'basculeraient sous':'repasseraient au-dessus du'} le seuil de pauvreté.</b>`;
@@ -1254,6 +1256,7 @@ const PRESETS={
   "Garantir 1 200 € minimum":{t:Array(10).fill(0),pl:1200},
   "Sous-indexer 0,3 pt/an":{t:Array(10).fill(0),idx:0.003},
   "Reculer l’âge d’un an":{t:Array(10).fill(0),age:1},
+  "Avancer l’âge d’un an":{t:Array(10).fill(0),age:-1},
   "Allonger la durée d’un an":{t:Array(10).fill(0),duree:4},
   "Financer par la CSG":{t:Array(10).fill(0),csg:1},
   "Financer par les cotisations":{t:Array(10).fill(0),cotSal:0.4,cotPat:0.6},
@@ -1281,7 +1284,7 @@ function majScenarios(){
         if(p.pl) E.plancher=Math.max(E.plancher,p.pl);
         if(p.am!==undefined) E.aspaMontant=Math.min(E.aspaMontant,p.am);
         if(p.idx) PJ.idx=Math.min(.015,PJ.idx+p.idx);
-        if(p.age) PJ.age=Math.min(4,PJ.age+p.age);
+        if(p.age) PJ.age=Math.max(-4,Math.min(4,PJ.age+p.age));
         if(p.duree) PJ.duree=Math.max(-8,Math.min(12,PJ.duree+p.duree));
         if(p.cotSal) PJ.cotSal=Math.max(-TAUX_SALARIAL,Math.min(15,PJ.cotSal+p.cotSal));
         if(p.cotPat) PJ.cotPat=Math.max(-TAUX_PATRONAL,Math.min(15,PJ.cotPat+p.cotPat));
@@ -1347,6 +1350,11 @@ function motsExpert(R,prel,T){
       ${mdS(d.cotis)} de cotisations, ${mdS(-d.subst)} de chômage et d’invalidité.
       La part restant en emploi compte moins qu’on ne le croit — une allocation coûte moins
       qu’une pension.`; }
+  else if(PJ.age<0){ const d=effetAge(PJ.age);
+    a+=`<br><br>Sur ${fr(Math.abs(d.personnes))} départs avancés : ${mdS(Math.abs(d.eco))} de
+      pensions supplémentaires versées, ${mdS(Math.abs(d.cotis))} de cotisations perdues,
+      ${mdS(Math.abs(d.subst))} de dépenses de chômage et d’invalidité évitées pour ceux qui,
+      sans ce départ anticipé, en auraient bénéficié en attendant l’âge légal.`; }
   html('mot-age', a);
 
   /* recettes */
@@ -1620,7 +1628,7 @@ function indicateurs(etat){
   if(E.plancher>0) mes.push('plancher '+eur(E.plancher));
   if(E.aspaMontant!==1043.59) mes.push(E.aspaMontant<=0?'ASPA supprimée':'ASPA '+eur(E.aspaMontant));
   if(PJ.idx>0) mes.push(`sous-indexation ${(PJ.idx*100).toFixed(2).replace('.',',')} pt sur ${PJ.idxDuree} ans`);
-  if(PJ.age>0) mes.push('âge '+ageTexte(AGES.cible+PJ.age*12));
+  if(PJ.age!==0) mes.push('âge '+ageTexte(AGES.cible+PJ.age*12));
   if(PJ.duree!==0) mes.push('durée '+(DUREE.requiseActuelle+PJ.duree)+' tr');
   if(PJ.cotSal!==0) mes.push(`cot. sal. ${sgn(PJ.cotSal)}${Math.abs(PJ.cotSal).toFixed(1)}`);
   if(PJ.cotPat!==0) mes.push(`cot. pat. ${sgn(PJ.cotPat)}${Math.abs(PJ.cotPat).toFixed(1)}`);
@@ -1821,7 +1829,7 @@ function resumeTexte(){
   if(E.plancher>0) m.push('• Plancher : '+eur(E.plancher)+'/mois');
   if(E.aspaMontant!==1043.59) m.push('• Minimum vieillesse : '+(E.aspaMontant<=0?'supprimé':eur(E.aspaMontant)));
   if(PJ.idx>0) m.push(`• Sous-indexation : ${(PJ.idx*100).toFixed(2).replace('.',',')} pt/an sur ${PJ.idxDuree} ans`);
-  if(PJ.age>0) m.push('• Âge légal : 64 ans → '+ageTexte(AGES.cible+PJ.age*12));
+  if(PJ.age!==0) m.push('• Âge légal : 64 ans → '+ageTexte(AGES.cible+PJ.age*12));
   if(PJ.duree!==0) m.push('• Durée requise : 172 → '+(DUREE.requiseActuelle+PJ.duree)+' trimestres');
   if(PJ.cotSal!==0) m.push(`• Cotisations salariales : ${sgn(PJ.cotSal)}${Math.abs(PJ.cotSal).toFixed(1)} pt`);
   if(PJ.cotPat!==0) m.push(`• Cotisations patronales : ${sgn(PJ.cotPat)}${Math.abs(PJ.cotPat).toFixed(1)} pt`);
@@ -1876,7 +1884,7 @@ function construireRapport(){
   if(E.aspaRecours<1){vide=false; m+=L('Recours au minimum vieillesse', pct(E.aspaRecours));}
   if(PJ.idx>0){vide=false; m+=L('Sous-indexation',
     `${(PJ.idx*100).toFixed(2).replace('.',',')} pt/an pendant ${PJ.idxDuree} ans`);}
-  if(PJ.age>0){vide=false; m+=L('Âge légal', '64 ans → '+ageTexte(AGES.cible+PJ.age*12));}
+  if(PJ.age!==0){vide=false; m+=L('Âge légal', '64 ans → '+ageTexte(AGES.cible+PJ.age*12));}
   if(PJ.duree!==0){vide=false; m+=L('Durée requise', '172 → '+(DUREE.requiseActuelle+PJ.duree)+' trimestres');}
   if(PJ.cotSal!==0){vide=false; m+=L('Cotisations salariales',
     `${sgn(PJ.cotSal)}${Math.abs(PJ.cotSal).toFixed(1).replace('.',',')} pt → ${(TAUX_SALARIAL+PJ.cotSal).toFixed(2).replace('.',',')} %`);}
@@ -1934,8 +1942,8 @@ function construireRapport(){
     F(eur(v/16.43e6/12),'','par retraité et par mois, sur 16,4 millions de retraités'); }
   if(pI>0) F('−'+pct(pI,1).replace(' %',' %'),'neg',
     `de pension pour tous après ${PJ.idxDuree} ans, soit ${eur(1936*(1-pI))} au lieu de 1 936 €`);
-  if(PJ.age>0) F(ageTexte(AGES.cible+PJ.age*12),'',
-    `d’âge légal contre 64 ans, atteint après ${(PJ.age*4).toFixed(0)} générations`);
+  if(PJ.age!==0) F(ageTexte(AGES.cible+PJ.age*12),'',
+    `d’âge légal contre 64 ans, atteint après ${Math.abs(PJ.age*4).toFixed(0)} générations`);
   html('rap-faits', f.length?`<h2>Ce que cela représente</h2><ul class="faits">${f.join('')}</ul>`:'');
 
   html('rap-invite', `<div class="rap-invite"><b>Ce scénario est reproductible.</b>
