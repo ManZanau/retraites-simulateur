@@ -782,13 +782,13 @@ function trajectoire(){
    ministère de la Justice ; Insee.
    ===================================================================== */
 const REPERES = {
-  justice:10.8e9,             /* mission Justice, crédits de paiement 2026 */
+  justice:10.7e9,             /* mission Justice, CP 2026 hors CAS Pensions (Sénat, PLF 2026) */
   ecole:64.5e9,               /* Enseignement scolaire, hors CAS Pensions */
-  detteEtat:58.0e9,           /* charge de la dette de l'État en 2026 */
+  detteEtat:59.3e9,           /* charge de la dette de l'État, LFI 2026 (Sénat) */
   hausseDefense:6.7e9,        /* hausse des crédits Défense en 2026 */
   penitentiaire:5.5e9,        /* administration pénitentiaire, CP 2026 */
   deficitRetraites:5.1e9,     /* solde du système de retraite en 2025, COR */
-  dettePublique:3416e9,       /* dette publique, fin septembre 2025 */
+  dettePublique:3482.2e9,     /* dette publique, fin septembre 2025 (Insee, 117,4 % du PIB) */
   pointCotisation:0.50        /* un point de cotisation = 0,50 point de PIB */
 };
 
@@ -1938,9 +1938,9 @@ function construireRapport(){
   if(Math.abs(net)>1e8){ const g=net>0, v=Math.abs(net);
     F((v/REPERES.pointCotisation/COR.pib2025*100).toFixed(1).replace('.',',')+' pt', g?'pos':'neg',
       `de cotisation retraite — ce qu’il ${g?'ne faudrait pas prélever':'faudrait prélever en plus'} sur les salaires`);
-    F((v/REPERES.justice).toFixed(1).replace('.',',')+' ×','','le budget annuel de la Justice, 10,8 Md€');
+    F((v/REPERES.justice).toFixed(1).replace('.',',')+' ×','','le budget annuel de la Justice, 10,7 Md€');
     F(pct(v/REPERES.ecole),'','du budget de l’Enseignement scolaire, 64,5 Md€');
-    F(pct(v/REPERES.detteEtat),'','de la charge de la dette de l’État, 58 Md€ par an');
+    F(pct(v/REPERES.detteEtat),'','de la charge de la dette de l’État, 59,3 Md€ par an');
     F(eur(v/16.43e6/12),'','par retraité et par mois, sur 16,4 millions de retraités'); }
   if(pI>0) F('−'+pct(pI,1).replace(' %',' %'),'neg',
     `de pension pour tous après ${PJ.idxDuree} ans, soit ${eur(1936*(1-pI))} au lieu de 1 936 €`);
