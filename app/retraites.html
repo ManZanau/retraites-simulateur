@@ -2086,18 +2086,19 @@ if(window.addEventListener) window.addEventListener('hashchange', ()=>{
   const ua=navigator.userAgent||'';
   const ios=/iphone|ipad|ipod/i.test(ua)
     || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
-  const android=/android/i.test(ua);
   let invite=null;
+  /* Chrome, Edge, Android : le bouton n'apparaît que lorsque le navigateur
+     autorise l'installation en un geste (sur Android, après ~30 s d'usage et
+     une interaction lors de la première visite, puis d'emblée). Il ouvre
+     alors la vraie fenêtre d'installation — jamais une consigne de menu. */
   window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); invite=e; b.hidden=false; });
   window.addEventListener('appinstalled', ()=>{ invite=null; b.hidden=true; });
-  /* Sur mobile, bouton visible d'emblée : Chrome Android ne déclenche son
-     invite qu'après ~30 s d'usage et une interaction, et Safari iOS jamais.
-     Sans invite disponible, le bouton donne la marche à suivre. */
-  if(ios || android) b.hidden=false;
+  /* iPhone et iPad : Safari n'offre aucune installation en un geste ; le
+     bouton donne donc la seule voie possible. */
+  if(ios) b.hidden=false;
   b.addEventListener('click', async ()=>{
     if(invite){ invite.prompt(); await invite.userChoice; invite=null; b.hidden=true; }
     else if(ios) message(b, 'Touchez Partager ⎙, puis « Sur l’écran d’accueil »', 7000);
-    else if(android) message(b, 'Menu ⋮ du navigateur, puis « Installer l’application »', 7000);
   });
 })();
 
