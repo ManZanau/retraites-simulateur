@@ -1229,9 +1229,11 @@ function tout(){
      valeur figée : elle doit rester synchronisée avec COR.pib2025 et
      COR.dep si ces constantes de référence sont un jour révisées. */
   const dep2025=T.find(p=>p.an===2025);
-  /* Graphique dessiné plus étroit sur téléphone : le SVG s'étire à la
-     largeur de l'écran, et un dessin large y rendrait les axes illisibles. */
-  const etroit=(window.innerWidth||1000)<600, Wc=etroit?360:660, Hc=etroit?170:150;
+  /* Graphique dessiné à la largeur réellement disponible (téléphone, colonne
+     de droite, grand écran) : le SVG s'étire, et un dessin plus large que sa
+     place rendrait les axes illisibles. */
+  const placeGraph=(($('res')||{}).clientWidth||700)-40;
+  const Wc=Math.max(300,Math.min(660,placeGraph)), Hc=Wc<480?170:150;
   html('res', !actif
     ? `<div class="res-lig">
          <div class="res-bloc"><div class="res-lib">Dépense de retraite aujourd’hui</div>
@@ -1256,8 +1258,8 @@ function tout(){
              Math.abs(fin.solde).toFixed(2).replace('.',',')} pt</div>
            <div class="res-app">contre ${sgn(fin.soldeRef)}${
              Math.abs(fin.soldeRef).toFixed(2).replace('.',',')} sans rien faire${
-             Math.abs(fin.solde-fin.soldeRef)>=0.005?` · <span class="${fin.solde>=fin.soldeRef?'d-gain':'d-perte'}">${
-             fin.solde>=fin.soldeRef?'+':'−'}${Math.abs(fin.solde-fin.soldeRef).toFixed(2).replace('.',',')} pt</span>`:''}</div></div>
+             Math.abs(fin.solde-fin.soldeRef)>=0.005?`<br><span class="${fin.solde>=fin.soldeRef?'d-gain':'d-perte'}">${
+             fin.solde>=fin.soldeRef?'+':'−'}${Math.abs(fin.solde-fin.soldeRef).toFixed(2).replace('.',',')}&nbsp;pt</span>`:''}</div></div>
        </div>
        <div class="res-graph">Solde du système de retraite, en points de PIB</div>
        ${courbe(T,Wc,Hc)}
@@ -2254,12 +2256,16 @@ if(window.IntersectionObserver){
   });
 }
 
-/* Rotation d'écran ou redimensionnement : redessiner le graphique si l'on
+/* Rotation d’écran ou redimensionnement : redessiner le graphique quand la
    change de gabarit (téléphone / écran large). */
 if(window.addEventListener){
-  let etroit=window.innerWidth<600;
+  let largeur=($('res')||{}).clientWidth||0, minuterie=null;
   window.addEventListener('resize', ()=>{
-    const e=window.innerWidth<600; if(e!==etroit){ etroit=e; tout(); }
+    clearTimeout(minuterie);
+    minuterie=setTimeout(()=>{
+      const l=($('res')||{}).clientWidth||0;
+      if(Math.abs(l-largeur)>40){ largeur=l; tout(); }
+    }, 150);
   });
 }
 
