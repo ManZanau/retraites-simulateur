@@ -59,10 +59,15 @@ for(const [o,cibles] of [
   ok('onglet '+o, v.length===0, v.length?('vides : '+v.join(', ')):cibles.length+' blocs');
 }
 ouvrirOnglet('pilot');
-E.taux=[0,0,0,0,0,0,0,0,-0.10,-0.30]; tout(); capturer('A');
-E.taux=Array(10).fill(-0.02); tout(); capturer('B');
-ouvrirOnglet('cmp'); ok('comparaison A/B', plein('tab-comp'));
-COMPARE={A:null,B:null}; ouvrirOnglet('pilot'); MODE_SIMPLE=true; appliquerMode();
+raz(); ouvrirOnglet('cmp');
+ok('comparaison d’office au sans réforme', plein('tab-comp')
+   && (_e['mot-comp'].innerHTML||'').indexOf('sans réforme')>=0);
+ouvrirOnglet('pilot');
+E.taux=[0,0,0,0,0,0,0,0,-0.10,-0.30]; tout(); garder();
+E.taux=Array(10).fill(-0.02); tout();
+ouvrirOnglet('cmp'); ok('comparaison A gardé / B en cours', plein('tab-comp')
+   && (_e['mot-comp'].innerHTML||'').indexOf('2031')>=0);
+COMPARE={A:null}; ouvrirOnglet('pilot'); MODE_SIMPLE=true; appliquerMode();
 
 raz(); E.taux=[0,0,0,0,0,0,0,0,-0.10,-0.30]; tout();
 ok('écrêtement D9/D10 = 5,44 Md', (chiffrer('centrale').nette/1e9).toFixed(2)==='5.44');

@@ -402,13 +402,13 @@ body:not(.simple) .simple-seul{display:none!important}
 
 <section id="cmp" role="tabpanel" aria-labelledby="t-cmp" hidden>
   <h2>Deux scénarios, les mêmes lignes</h2>
-  <p class="sous">Réglez un scénario, enregistrez-le en A, réglez-en un autre, enregistrez-le en B.</p>
+  <p class="sous"><b>A</b> : le scénario gardé — par défaut, l’évolution sans réforme.
+    <b>B</b> : les réglages en cours dans Décider. Pour opposer deux réformes, gardez la
+    première (bouton « Garder pour comparer » sous le résultat), puis réglez la seconde.</p>
   <div class="puces">
-    <button class="puce" id="cp-a">Enregistrer en A</button>
-    <button class="puce" id="cp-b">Enregistrer en B</button>
-    <button class="puce" id="cp-la">Reprendre A</button>
-    <button class="puce" id="cp-lb">Reprendre B</button>
-    <button class="puce" id="cp-vider">Effacer</button>
+    <button class="puce" id="cp-a">Garder les réglages en cours comme A</button>
+    <button class="puce" id="cp-la">Reprendre A dans Décider</button>
+    <button class="puce" id="cp-vider">Revenir au sans réforme</button>
   </div>
   <table id="tab-comp"></table>
   <div class="note" id="mot-comp"></div>
@@ -1062,7 +1062,7 @@ function partHauteScenario(){
    PRÉSENTATION — état d'affichage
    ========================================================================== */
 let MODE_SIMPLE=true, MODE_CUMUL=false, SCENARIOS=[], ONGLET='pilot';
-let COMPARE={A:null,B:null};
+let COMPARE={A:null};   /* A gardé ; B = toujours les réglages en cours */
 let CIBLE={montant:20e9, horizon:2031,
   leviers:{age:true, idx:true, deciles:true, plafond:true, csg:false, cot:false}};
 
@@ -1827,10 +1827,15 @@ function indicateurs(etat){
   restaurer(sv); EFFET_PILOTAGE=chiffrer(E.variante).nette/COR.pib2025*100;
   return res;
 }
+/* Référence par défaut de la comparaison : aucune mesure. */
+function etatSansReforme(){
+  return {taux:Array(10).fill(0), plafond:0, plancher:0, aspaMontant:1043.59, aspaRecours:1,
+          idx:0, idxDuree:PJ.idxDuree, age:0, cotSal:0, cotPat:0, csg:0, nom:'Sans réforme'};
+}
 function rendreComparaison(){
-  const A=COMPARE.A?indicateurs(COMPARE.A):null, B=COMPARE.B?indicateurs(COMPARE.B):null;
-  if(!A&&!B){ html('tab-comp',''); html('mot-comp',
-    `Aucun scénario enregistré. Réglez les curseurs, puis enregistrez en A.`); return; }
+  const eA=COMPARE.A||etatSansReforme(), eB=etatCourant(); eB.nom=nomScenario();
+  const memes=JSON.stringify({...eA,nom:0})===JSON.stringify({...eB,nom:0});
+  const A=indicateurs(eA), B=indicateurs(eB);
   const c=(x,f)=>x?f(x):'<span style="color:var(--brume)">—</span>';
   const ec=(f,inv)=>{ if(!A||!B) return '—';
     const d=f(B)-f(A); if(Math.abs(d)<1e-9) return '=';
@@ -1874,7 +1879,10 @@ function rendreComparaison(){
     if(Math.max(A.baisse,B.baisse)>.005)
       n += `${B.baisse>A.baisse?'B':'A'} fait davantage porter l’effort sur l’ensemble des
         retraités, par la sous-indexation — un effet qui n’apparaît dans aucune ligne par décile.`;
-  } else n=`Un seul scénario enregistré. Réglez-en un second pour voir l’écart.`;
+  }
+  if(memes) n=COMPARE.A
+    ? `Les réglages en cours sont identiques au scénario gardé en A. Modifiez-les dans Décider pour voir l’écart.`
+    : `Aucune mesure réglée pour l’instant : B est identique au sans réforme. Réglez un scénario dans Décider.`;
   html('mot-comp', n);
 }
 
@@ -2238,12 +2246,11 @@ brancher('mode-cumuler',()=>{MODE_CUMUL=true;
   $('mode-cumuler').setAttribute('aria-pressed','true'); tout();});
 
 /* comparaison */
-function capturer(s){ const e=etatCourant(); e.nom=nomScenario(); COMPARE[s]=e;
-  rendreComparaison(); message($(s==='A'?'cp-a':'cp-b'),'Enregistré en '+s); }
-brancher('cp-a',()=>capturer('A')); brancher('cp-b',()=>capturer('B'));
-brancher('cp-la',()=>{if(COMPARE.A){restaurer(COMPARE.A); SCENARIOS=[COMPARE.A.nom]; tout();}});
-brancher('cp-lb',()=>{if(COMPARE.B){restaurer(COMPARE.B); SCENARIOS=[COMPARE.B.nom]; tout();}});
-brancher('cp-vider',()=>{COMPARE={A:null,B:null}; rendreComparaison();});
+function garder(){ const e=etatCourant(); e.nom=nomScenario(); COMPARE.A=e; rendreComparaison(); }
+brancher('cp-a',()=>{ garder(); message($('cp-a'),'Gardé comme A'); });
+brancher('cp-la',()=>{ const e=COMPARE.A||etatSansReforme(); restaurer(e);
+  SCENARIOS=COMPARE.A?[e.nom]:[]; ouvrirOnglet('pilot'); });
+brancher('cp-vider',()=>{ COMPARE={A:null}; rendreComparaison(); });
 
 /* rapport */
 brancher('rap-fermer',fermerRapport); brancher('voile',fermerRapport);
@@ -2354,6 +2361,14 @@ if(window.addEventListener){
   b.style.cssText='margin-top:1rem;background:var(--or-clair);border-color:var(--or-clair);color:var(--encre)';
   b.addEventListener('click',ouvrirRapport);
   $('res').after(b);
+  /* Version détaillée : garder le scénario en cours pour l'opposer au suivant
+     dans Comparer, sans quitter Décider. */
+  const g=document.createElement('button');
+  g.className='action sec avance'; g.id='btn-garder'; g.textContent='Garder pour comparer';
+  g.style.cssText='margin:1rem 0 0 .5rem';
+  g.addEventListener('click',()=>{ garder();
+    message(g,'Gardé — réglez-en un autre, puis ouvrez Comparer', 3500); });
+  b.after(g);
 })();
 
 /* Compteurs — connexions différentes + rapports partagés. Approximatifs,

@@ -47,8 +47,8 @@ Ne pas relire ces fichiers en entier sans besoin : chercher la section utile.
    hébergée dans `fonts/`) : **publiées sur `main` le 20/10/2026**.
 2. **Reste de la revue d'ergonomie** (après la maquette), par priorité :
    - ~~« Atteindre une cible » : bouton « Appliquer au simulateur »~~ fait le 20/10/2026.
-   - « Comparer » : comparer d'office au « sans réforme », bouton « Garder ce
-     scénario » depuis Décider (aujourd'hui allers-retours entre onglets).
+   - ~~« Comparer » : d'office au « sans réforme », bouton « Garder pour
+     comparer » dans Décider~~ fait le 20/10/2026 (A = gardé, B = réglages en cours).
    - Curseurs « Âge de départ » et « Cotisations » : afficher l'unité (« 64 ans »,
      « pt »), et les bornes −/+ des curseurs.
    - Plus tard : version anglaise, nom de domaine (≈ 10 €/an, achat par Stan).
