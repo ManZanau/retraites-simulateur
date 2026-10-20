@@ -46,7 +46,7 @@ Ne pas relire ces fichiers en entier sans besoin : chercher la section utile.
    ≥ 13 px, curseurs lisibles par lecteur d'écran, onglets au clavier, police
    hébergée dans `fonts/`) : **publiées sur `main` le 20/10/2026**.
 2. **Reste de la revue d'ergonomie** (après la maquette), par priorité :
-   - « Atteindre une cible » : bouton « Appliquer au simulateur » sur chaque dosage.
+   - ~~« Atteindre une cible » : bouton « Appliquer au simulateur »~~ fait le 20/10/2026.
    - « Comparer » : comparer d'office au « sans réforme », bouton « Garder ce
      scénario » depuis Décider (aujourd'hui allers-retours entre onglets).
    - Curseurs « Âge de départ » et « Cotisations » : afficher l'unité (« 64 ans »,

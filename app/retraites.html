@@ -1732,6 +1732,8 @@ function resoudre(pr,cible,an){
   appliquerDose(pr.dose(k)); at=rendementAn(an);
   return {k,atteint:at,dose:pr.dose(k),suffisant:at>=cible*.97};
 }
+/* Dosages trouvés au dernier calcul, pour le bouton « Appliquer au simulateur ». */
+let DOSES_CIBLE=[];
 const LEVIERS={age:'Âge de départ', idx:'Sous-indexation', deciles:'Écrêtement par décile',
   plafond:'Plafond de pension', csg:'CSG', cot:'Cotisations'};
 function rendreCible(){
@@ -1748,6 +1750,7 @@ function rendreCible(){
     b.setAttribute('data-actif', CIBLE.leviers[b.dataset.lev]?'1':'0'));
 
   const sv=etatCourant(); let out='', aucun=true;
+  DOSES_CIBLE=[];
   for(const pr of PROFILS){
     if(!pr.besoin.every(l=>CIBLE.leviers[l])) continue;
     aucun=false;
@@ -1774,7 +1777,9 @@ function rendreCible(){
              ${li.map(x=>'<li>'+x+'</li>').join('')}</ul>
            <p style="font-size:.8rem;color:var(--brume)">Perte nette annuelle :
              décile 5 ${fr(Math.abs(pe(4)))} € · décile 10 ${fr(Math.abs(pe(9)))} € ·
-             solde 2070 ${T.find(x=>x.an===2070).solde.toFixed(2).replace('.',',')} pt</p>`
+             solde 2070 ${T.find(x=>x.an===2070).solde.toFixed(2).replace('.',',')} pt</p>
+           <button type="button" class="action sec" style="margin-top:.4rem" data-appliquer="${DOSES_CIBLE.push({nom:pr.nom,dose:d})-1}"
+             >Appliquer au simulateur</button>`
         : `<p style="color:var(--perte)"><b>Cible hors d’atteinte par ce seul levier.</b>
            Au maximum, il ne dégage que ${md1(r.atteint)} Md€ sur les
            ${md1(CIBLE.montant)} demandés.</p>`)
@@ -2200,6 +2205,14 @@ function fermerRapport(){ $('rapport').classList.remove('on'); $('voile').classL
 function brancher(id,fn){ const e=$(id); if(e) e.addEventListener('click',fn); }
 
 /* modes et onglets */
+/* « Atteindre une cible » : reporter un dosage dans le simulateur, sur
+   l'onglet Décider, à la place des réglages en cours. */
+if($('cb-res')) $('cb-res').addEventListener('click', ev=>{
+  const b=ev.target.closest && ev.target.closest('[data-appliquer]'); if(!b) return;
+  const c=DOSES_CIBLE[+b.dataset.appliquer]; if(!c) return;
+  appliquerDose(c.dose); SCENARIOS=['Cible '+md1(CIBLE.montant)+' Md€ en '+CIBLE.horizon+' : '+c.nom.toLowerCase()];
+  ouvrirOnglet('pilot'); window.scrollTo({top:0,behavior:'smooth'});
+});
 brancher('m-simple',()=>{MODE_SIMPLE=true; appliquerMode(); tout();});
 brancher('m-expert',()=>{MODE_SIMPLE=false; appliquerMode(); tout();});
 document.querySelectorAll('.onglet').forEach(t=>t.addEventListener('click',()=>{
