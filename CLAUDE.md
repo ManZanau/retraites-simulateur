@@ -49,8 +49,7 @@ Ne pas relire ces fichiers en entier sans besoin : chercher la section utile.
    - ~~« Atteindre une cible » : bouton « Appliquer au simulateur »~~ fait le 20/10/2026.
    - ~~« Comparer » : d'office au « sans réforme », bouton « Garder pour
      comparer » dans Décider~~ fait le 20/10/2026 (A = gardé, B = réglages en cours).
-   - Curseurs « Âge de départ » et « Cotisations » : afficher l'unité (« 64 ans »,
-     « pt »), et les bornes −/+ des curseurs.
+   - ~~Unités et bornes des curseurs du mode simple~~ fait le 20/10/2026.
    - Plus tard : version anglaise, nom de domaine (≈ 10 €/an, achat par Stan).
 
 ## Règles apprises (à respecter)
