@@ -202,10 +202,78 @@ td .fin,.fin{display:block;font-size:.72rem;color:var(--brume);font-weight:400}
 body.simple .avance{display:none!important}
 body:not(.simple) .simple-seul{display:none!important}
 
+/* =====================================================================
+   MISE EN PAGE
+   Écran large : curseurs à gauche, résultat fixe à droite, toujours en vue.
+   Téléphone : une colonne, résultat en tête, bandeau en bas une fois le
+   résultat sorti de l'écran.
+   ===================================================================== */
+.wrap{max-width:1160px}
+#inc,#obj,#cmp,#meth{max-width:760px}
+
+/* Le choix Simple / Détaillé est un mode, pas une page : sélecteur en
+   pilule, distinct des onglets de la barre de navigation. */
+.modes{display:inline-flex;gap:0;margin:1.1rem 0 1.3rem;padding:3px;vertical-align:top;
+  border:1px solid rgba(255,255,255,.22);border-radius:999px}
+.modes button{padding:.36rem 1rem;border:0;border-radius:999px;font-size:.82rem;
+  color:rgba(255,255,255,.72)}
+.modes button[aria-pressed="true"]{background:var(--or-clair);color:var(--encre)}
+.tete .installer{vertical-align:top;margin:1.1rem 0 1.3rem .6rem}
+
+/* Curseurs du mode simple : libellé à gauche, valeur à droite. Sans ces
+   positions explicites, la valeur (placée sur deux rangées) prenait la
+   première colonne et repoussait le libellé à droite. */
+.lev .nom,.lev .det{grid-column:1}
+.lev .val{grid-column:2}
+
+/* Scénarios regroupés par intention ; la remise à zéro à part. */
+.puces-groupe{margin:.75rem 0 0}
+.puces-groupe .tit{font-size:.72rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--brume);margin-bottom:.35rem}
+.puces-groupe .puces{margin:0}
+.raz{display:inline-block;margin-top:.85rem;background:none;border:0;padding:0;cursor:pointer;
+  font:inherit;font-size:.83rem;color:var(--bleu);text-decoration:underline;text-underline-offset:2px}
+
+.pilot-leviers .groupe:first-child{margin-top:0}
+.note.intro{margin-top:0}
+
+@media (min-width:1000px){
+  .pilot-grille{display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:2.4rem;align-items:start}
+  .pilot-leviers{grid-column:1;grid-row:1}
+  .pilot-resultat{grid-column:2;grid-row:1;position:sticky;top:4rem;
+    max-height:calc(100vh - 5rem);overflow-y:auto;scrollbar-width:thin}
+  .barre-res{display:none!important}
+}
+@media (max-width:999px){
+  .pilot-leviers{margin-top:1.4rem}
+  /* Sur téléphone, les curseurs avant le texte d'introduction. */
+  .simple-seul{display:flex;flex-direction:column}
+  .simple-seul .intro{order:2;margin-top:.7rem}
+  main{padding-bottom:5.5rem}
+}
+@media (max-width:600px){
+  .tete{padding-top:1.1rem}
+  .tete h1{font-size:1.42rem}
+  .tete p{font-size:.86rem;margin-top:.4rem}
+  .modes{margin:.85rem 0 1rem}
+  .tete .installer{margin:.85rem 0 1rem .5rem}
+}
+
+.barre-res{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:center;
+  gap:.9rem;padding:.7rem 1.1rem calc(.7rem + env(safe-area-inset-bottom));
+  background:var(--encre);color:var(--blanc);font-size:.8rem;line-height:1.3;
+  box-shadow:0 -8px 22px rgba(18,32,58,.28);transform:translateY(115%);transition:transform .22s}
+.barre-res.on{transform:none}
+.barre-res .lib{color:#9DB0CD;font-size:.72rem}
+.barre-res .chiffre{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:1.08rem}
+.barre-res .chiffre.gain{color:var(--or-clair)} .barre-res .chiffre.perte{color:#F0968D}
+.barre-res button{margin-left:auto;flex:0 0 auto;background:none;color:var(--blanc);cursor:pointer;
+  border:1px solid rgba(255,255,255,.35);border-radius:var(--r);padding:.4rem .75rem;font:inherit;font-size:.78rem}
+
 @media print{
   @page{margin:16mm 14mm;size:A4}
   body{background:#fff;font-size:10.5pt}
-  .tete,.nav,main,.pied-site,#rap-actions,#voile{display:none!important}
+  .tete,.nav,main,.pied-site,.barre-res,#rap-actions,#voile{display:none!important}
   #rapport{display:block!important;position:static;overflow:visible}
   #rap-corps{padding:0}
   .wrap{max-width:none;padding:0}
@@ -239,11 +307,17 @@ body:not(.simple) .simple-seul{display:none!important}
 <main><div class="wrap">
 
 <section id="pilot">
-  <div class="res" id="res"></div>
+ <div class="pilot-grille">
+  <!-- Sur écran large, le résultat reste fixe à droite pendant qu'on règle
+       les curseurs à gauche ; sur téléphone il passe en tête de page. -->
+  <aside class="pilot-resultat" aria-label="Résultat">
+    <div class="res" id="res"></div>
+  </aside>
 
+  <div class="pilot-leviers">
   <div class="simple-seul">
-    <div class="groupe" id="lev-simple" style="margin-top:1.4rem"></div>
-    <div class="note" id="mot-simple"></div>
+    <div class="note intro" id="mot-simple"></div>
+    <div class="groupe" id="lev-simple"></div>
   </div>
 
   <div class="avance">
@@ -252,7 +326,7 @@ body:not(.simple) .simple-seul{display:none!important}
       <button id="mode-remplacer" aria-pressed="true">Un seul</button>
       <button id="mode-cumuler" aria-pressed="false">Cumuler</button>
     </div>
-    <div class="puces" id="presets"></div>
+    <div id="presets"></div>
     <div class="note" id="actifs"></div>
 
     <h2>Montants des pensions</h2>
@@ -281,6 +355,8 @@ body:not(.simple) .simple-seul{display:none!important}
     <div class="note" id="mot-hyp"></div>
     <table id="tab-prod"></table>
   </div>
+  </div>
+ </div>
 </section>
 
 <section id="inc" hidden>
@@ -336,6 +412,10 @@ body:not(.simple) .simple-seul{display:none!important}
     · Licence MIT ·
     <a href="https://github.com/ManZanau/retraites-simulateur/issues">Signaler une erreur</a></p>
 </div></footer>
+
+<!-- Téléphone : quand le bloc résultat est sorti de l'écran, l'effet du
+     scénario reste visible en bas pendant qu'on règle les curseurs. -->
+<div class="barre-res" id="barre-res" aria-live="polite"></div>
 
 <div id="voile"></div>
 <div id="rapport">
@@ -1186,6 +1266,20 @@ function tout(){
          <span><i style="border-color:#6E86AC;border-top-style:dashed"></i>sans réforme</span></div>
        ${tableProjection(T,true)}`);
 
+  /* bandeau mobile : effet net et solde 2070 du scénario en cours */
+  const barre=$('barre-res');
+  if(barre){
+    barre.dataset.actif=actif?'1':'0';
+    barre.innerHTML=actif
+      ? `<div><div class="lib">Dès la première année</div>
+           <div class="chiffre ${cls(net)}">${mdS(net)}</div></div>
+         <div><div class="lib">Solde 2070</div>
+           <div class="chiffre">${sgn(fin.solde)}${Math.abs(fin.solde).toFixed(2).replace('.',',')} pt</div></div>
+         <button type="button" data-voir-res>Détail</button>`
+      : '';
+    majBarre();
+  }
+
   if(MODE_SIMPLE){ majCurseurs(LEV.simple); motSimple(R,net,lo,hi,T); }
   else {
     majCurseurs(LEV.bornes); majCurseurs(LEV.aspa); majCurseurs(LEV.age);
@@ -1319,8 +1413,22 @@ const PRESETS={
 function majScenarios(){
   const e=$('presets'); if(!e) return;
   if(!e.dataset.prêt){
-    e.innerHTML=Object.keys(PRESETS).map(k=>
-      `<button class="puce" data-p="${k}" data-actif="0">${k}</button>`).join('');
+    /* Regroupés par intention ; un scénario absent des groupes reste
+       affiché dans un dernier groupe plutôt que de disparaître. */
+    const GROUPES_SCEN=[
+      ['Réduire les pensions', ['Écrêter les hautes pensions','Plafonner à 4 000 €',
+        'Geler toutes les pensions 2 %','Sous-indexer 0,3 pt/an','Supprimer le minimum vieillesse']],
+      ['Protéger les petites pensions', ['Revaloriser les plus faibles','Garantir 1 200 € minimum']],
+      ['Âge et durée', ['Reculer l’âge d’un an','Avancer l’âge d’un an','Allonger la durée d’un an']],
+      ['Recettes', ['Financer par la CSG','Financer par les cotisations','Alléger le coût du travail']]];
+    const ranges=new Set(GROUPES_SCEN.flatMap(g=>g[1]));
+    const autres=Object.keys(PRESETS).filter(k=>!ranges.has(k) && !PRESETS[k].raz);
+    if(autres.length) GROUPES_SCEN.push(['Autres', autres]);
+    const puce=k=>`<button class="puce" data-p="${k}" data-actif="0">${k}</button>`;
+    e.innerHTML=GROUPES_SCEN.map(([t,l])=>`<div class="puces-groupe"><div class="tit">${t}</div>
+        <div class="puces">${l.filter(k=>PRESETS[k]).map(puce).join('')}</div></div>`).join('')
+      + Object.keys(PRESETS).filter(k=>PRESETS[k].raz)
+          .map(k=>`<button class="raz" data-p="${k}">${k}</button>`).join('');
     e.querySelectorAll('[data-p]').forEach(b=>b.addEventListener('click',()=>{
       const p=PRESETS[b.dataset.p];
       if(p.raz){ razTout(); SCENARIOS=[]; }
@@ -2129,6 +2237,22 @@ if(window.addEventListener) window.addEventListener('hashchange', ()=>{
     SCENARIOS=[]; appliquerMode(); tout();
   }
 });
+
+/* Bandeau mobile : visible seulement si un scénario est actif, si l'onglet
+   Décider est ouvert et si le bloc résultat est sorti de l'écran. */
+var RES_HORS_VUE=false;   /* var : lue par tout() dès le démarrage, plus haut */
+function majBarre(){
+  const b=$('barre-res'); if(!b || !b.classList) return;
+  b.classList.toggle('on', RES_HORS_VUE && b.dataset.actif==='1' && ONGLET==='pilot');
+}
+if(window.IntersectionObserver){
+  new IntersectionObserver(([e])=>{ RES_HORS_VUE=!e.isIntersecting; majBarre(); })
+    .observe($('res'));
+  $('barre-res').addEventListener('click', ev=>{
+    if(ev.target.closest('[data-voir-res]'))
+      $('res').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+}
 
 /* Rotation d'écran ou redimensionnement : redessiner le graphique si l'on
    change de gabarit (téléphone / écran large). */
