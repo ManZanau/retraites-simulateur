@@ -1,0 +1,6 @@
+# Cloudflare Pages : la racine du site sert directement le simulateur
+# (réécriture interne, l'adresse affichée reste « / »). Les liens de
+# scénario prennent ainsi la forme https://<site>/#... au lieu de
+# https://<site>/app/retraites.html#...
+# Ignoré par GitHub Pages, où index.html redirige vers app/retraites.html.
+/  /app/retraites  200
