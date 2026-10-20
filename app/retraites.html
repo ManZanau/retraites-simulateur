@@ -2257,7 +2257,7 @@ if(window.IntersectionObserver){
 }
 
 /* Rotation d’écran ou redimensionnement : redessiner le graphique quand la
-   change de gabarit (téléphone / écran large). */
+   place disponible change nettement. */
 if(window.addEventListener){
   let largeur=($('res')||{}).clientWidth||0, minuterie=null;
   window.addEventListener('resize', ()=>{
