@@ -6,6 +6,20 @@
 <title>Où va l'argent des retraites</title>
 <meta name="description" content="Simulateur de dépense publique : l'effet réel d'une réforme des retraites, après impôt, prélèvements sociaux et minimum vieillesse, jusqu'en 2070.">
 <meta name="theme-color" content="#12203A">
+<meta name="author" content="Stanislas Aurain">
+<link rel="canonical" href="https://ou-va-largent-des-retraites.pages.dev/">
+<!-- Aperçu affiché quand le lien est partagé (LinkedIn, messageries, X). -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:site_name" content="Où va l'argent des retraites">
+<meta property="og:title" content="Où va l'argent des retraites — simulateur de dépense publique">
+<meta property="og:description" content="Chaque euro retiré aux retraites n'en rapporte pas un. Testez une réforme : son effet réel sur les finances publiques, après impôt, CSG et minimum vieillesse, jusqu'en 2070.">
+<meta property="og:url" content="https://ou-va-largent-des-retraites.pages.dev/">
+<meta property="og:image" content="https://ou-va-largent-des-retraites.pages.dev/icons/apercu-partage.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Où va l'argent des retraites : 422 Md€ de dépenses, 14,1 % du PIB">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
@@ -60,6 +74,10 @@ h3{font-size:.95rem;font-weight:600;margin-bottom:.3rem}
 .sous{font-size:.86rem;color:var(--encre-2);margin-bottom:.85rem;max-width:66ch;line-height:1.55}
 .note{font-size:.83rem;color:var(--encre-2);line-height:1.62;max-width:70ch;margin:.7rem 0}
 .note b{color:var(--encre);font-weight:600}
+.pied-site{border-top:1px solid var(--trait);margin-top:2.6rem;padding:1.3rem 0 2.2rem;
+  font-size:.78rem;line-height:1.6;color:var(--encre-2)}
+.pied-site p+p{margin-top:.35rem}
+.pied-site a{color:var(--bleu)}
 
 .res{background:var(--encre);color:var(--blanc);border-radius:var(--r);
   padding:1.35rem 1.25rem 1.15rem}
@@ -69,7 +87,9 @@ h3{font-size:.95rem;font-weight:600;margin-bottom:.3rem}
 .res-val{font-size:clamp(1.5rem,6.4vw,2rem);font-weight:600;letter-spacing:-.035em;line-height:1}
 .res-val.gain{color:var(--or-clair)} .res-val.perte{color:#F0968D}
 .res-app{font-size:.76rem;color:#9DB0CD;margin-top:.28rem;line-height:1.4}
-.res svg{display:block;width:100%;height:auto;margin-top:1.1rem}
+.res svg{display:block;width:100%;height:auto;margin-top:.35rem}
+.res-graph{font-size:.76rem;color:#9DB0CD;margin-top:1.15rem}
+.res td.pos,.res .d-gain{color:#8FD9B0} .res td.neg,.res .d-perte{color:#F0968D}
 .res-legende{display:flex;gap:1.1rem;font-size:.72rem;color:#9DB0CD;margin-top:.35rem;flex-wrap:wrap}
 .res-legende i{display:inline-block;width:14px;height:0;border-top:2px solid;margin-right:.32rem;
   vertical-align:middle}
@@ -185,7 +205,7 @@ body:not(.simple) .simple-seul{display:none!important}
 @media print{
   @page{margin:16mm 14mm;size:A4}
   body{background:#fff;font-size:10.5pt}
-  .tete,.nav,main,#rap-actions,#voile{display:none!important}
+  .tete,.nav,main,.pied-site,#rap-actions,#voile{display:none!important}
   #rapport{display:block!important;position:static;overflow:visible}
   #rap-corps{padding:0}
   .wrap{max-width:none;padding:0}
@@ -310,6 +330,15 @@ body:not(.simple) .simple-seul{display:none!important}
 
 </div></main>
 
+<footer class="pied-site"><div class="wrap">
+  <p>Conçu par <b>Stanislas Aurain</b>. Données à jour au <span id="date-donnees"></span> —
+    Drees, Conseil d’orientation des retraites (juin 2026), Insee, loi de financement de la
+    sécurité sociale pour 2026.</p>
+  <p><a href="https://github.com/ManZanau/retraites-simulateur">Code source et méthode</a>
+    · Licence MIT ·
+    <a href="https://github.com/ManZanau/retraites-simulateur/issues">Signaler une erreur</a></p>
+</div></footer>
+
 <div id="voile"></div>
 <div id="rapport">
   <div id="rap-actions"><div class="wrap">
@@ -341,6 +370,9 @@ const P = {
 };
 
 const DEFICIT_COR = 5.1e9;
+/* Date de la dernière vérification des données, affichée dans la Méthode,
+   le pied de page et le rapport. À mettre à jour à chaque révision. */
+const DATE_DONNEES = '20 octobre 2026';
 
 /* Seuil de pauvreté monétaire 2024, personne seule : Insee, juillet 2026.
    Taux de pauvreté des retraités la même année : 10,4 %. */
@@ -351,7 +383,9 @@ const eur=n=>Math.round(n).toLocaleString('fr-FR')+' €';
 
 const md=n=>(n/1e9).toLocaleString('fr-FR',{minimumFractionDigits:1,maximumFractionDigits:1})+' Md€';
 
-const mdS=n=>(n>=0?'+':'−')+md(Math.abs(n));
+/* Montant signé. Sous 50 M€, il s'arrondit à 0,0 Md€ : pas de signe, pour
+   éviter les « −0,0 Md€ » qui suggèrent un effet là où il n'y en a pas. */
+const mdS=n=>Math.abs(n)<0.05e9 ? md(0) : (n>=0?'+':'−')+md(Math.abs(n));
 
 
 function trancheCsg(r){const s=P.csg.seuils;
@@ -1070,7 +1104,7 @@ function majCurseurs(liste){
    comptant et une conséquence longue ; les séparer les rendait incomparables.
    ========================================================================== */
 function courbe(T,W,H){
-  const G=34, D=6, B=20, Ht=8;
+  const G=30, D=16, B=22, Ht=8;
   const x=an=>G+(an-2026)/(2070-2026)*(W-G-D);
   const vals=T.map(p=>p.solde).concat(T.map(p=>p.soldeRef));
   const lo=Math.min(-2.8,...vals)-.25, hi=Math.max(1.2,...vals)+.25;
@@ -1083,10 +1117,11 @@ function courbe(T,W,H){
   /* grille */
   for(const v of [1,0,-1,-2]) s+=`<line x1="${G}" y1="${y(v)}" x2="${W-D}" y2="${y(v)}"
      stroke="${v===0?'rgba(255,255,255,.42)':'rgba(255,255,255,.11)'}" stroke-width="1"/>
-     <text x="${G-6}" y="${y(v)+3.5}" text-anchor="end" font-family="IBM Plex Mono,monospace"
-      font-size="9" fill="#7F92B2">${v>0?'+':''}${v}</text>`;
-  for(const a of [2030,2040,2050,2060,2070]) s+=`<text x="${x(a)}" y="${H-5}" text-anchor="middle"
-     font-family="IBM Plex Mono,monospace" font-size="9" fill="#7F92B2">${a}</text>`;
+     <text x="${G-6}" y="${y(v)+4}" text-anchor="end" font-family="IBM Plex Mono,monospace"
+      font-size="11" fill="#8A9CBA">${v>0?'+':v<0?'−':''}${Math.abs(v)}</text>`;
+  for(const a of [2030,2040,2050,2060,2070]) s+=`<text x="${x(a)}" y="${H-5}"
+     text-anchor="${a===2070?'end':'middle'}" font-family="IBM Plex Mono,monospace"
+     font-size="11" fill="#8A9CBA">${a}</text>`;
   /* aire entre référence et scénario */
   s+=`<path d="M ${pts('solde').split(' ').join(' L ')} L ${T.slice().reverse()
       .map(p=>x(p.an).toFixed(1)+','+y(p.soldeRef).toFixed(1)).join(' L ')} Z"
@@ -1116,6 +1151,9 @@ function tout(){
      valeur figée : elle doit rester synchronisée avec COR.pib2025 et
      COR.dep si ces constantes de référence sont un jour révisées. */
   const dep2025=T.find(p=>p.an===2025);
+  /* Graphique dessiné plus étroit sur téléphone : le SVG s'étire à la
+     largeur de l'écran, et un dessin large y rendrait les axes illisibles. */
+  const etroit=(window.innerWidth||1000)<600, Wc=etroit?360:660, Hc=etroit?170:150;
   html('res', !actif
     ? `<div class="res-lig">
          <div class="res-bloc"><div class="res-lib">Dépense de retraite aujourd’hui</div>
@@ -1125,7 +1163,8 @@ function tout(){
            <div class="res-val num perte">5,1 Md€</div>
            <div class="res-app">2,4 points de PIB attendus en 2070</div></div>
        </div>
-       ${courbe(T,660,150)}
+       <div class="res-graph">Solde du système de retraite, en points de PIB</div>
+       ${courbe(T,Wc,Hc)}
        <div class="res-legende"><span><i style="border-color:#6E86AC;border-top-style:dashed"></i>
          trajectoire sans réforme, projection du COR</span></div>
        ${tableProjection(T,false)}`
@@ -1135,15 +1174,18 @@ function tout(){
            <div class="res-app">${fourchette?`de ${mdS(lo)} à ${mdS(hi)} · `:''}${
              Math.abs(net/DEFICIT_COR*100).toFixed(0)} % du déficit actuel</div></div>
          <div class="res-bloc"><div class="res-lib">Solde du système en 2070</div>
-           <div class="res-val num ${cls(fin.solde)}">${sgn(fin.solde)}${
+           <div class="res-val num">${sgn(fin.solde)}${
              Math.abs(fin.solde).toFixed(2).replace('.',',')} pt</div>
-           <div class="res-app">contre −2,40 sans rien faire</div></div>
+           <div class="res-app">contre ${sgn(fin.soldeRef)}${
+             Math.abs(fin.soldeRef).toFixed(2).replace('.',',')} sans rien faire${
+             Math.abs(fin.solde-fin.soldeRef)>=0.005?` · <span class="${fin.solde>=fin.soldeRef?'d-gain':'d-perte'}">${
+             fin.solde>=fin.soldeRef?'+':'−'}${Math.abs(fin.solde-fin.soldeRef).toFixed(2).replace('.',',')} pt</span>`:''}</div></div>
        </div>
-       ${courbe(T,660,150)}
+       <div class="res-graph">Solde du système de retraite, en points de PIB</div>
+       ${courbe(T,Wc,Hc)}
        <div class="res-legende">
          <span><i style="border-color:${fin.solde>=fin.soldeRef?'#E9C55A':'#F0968D'}"></i>votre scénario</span>
-         <span><i style="border-color:#6E86AC;border-top-style:dashed"></i>sans réforme</span>
-         <span>solde en points de PIB</span></div>
+         <span><i style="border-color:#6E86AC;border-top-style:dashed"></i>sans réforme</span></div>
        ${tableProjection(T,true)}`);
 
   if(MODE_SIMPLE){ majCurseurs(LEV.simple); motSimple(R,net,lo,hi,T); }
@@ -1442,7 +1484,7 @@ function rendreIncidence(R,prel,T){
   const pIdx=PJ.idx>0?1-Math.pow(1-PJ.idx,PJ.idxDuree):0;
   let h=`<thead><tr><th>Décile</th><th>Brut moyen</th><th>après</th>`
     +(pIdx>0?`<th>Sous-indexation<br>après ${PJ.idxDuree} ans</th>`:``)
-    +`<th>Net moyen</th><th>Perte nette<br>annuelle</th></tr></thead><tbody>`;
+    +`<th>Revenu net<br>après réforme</th><th>Perte nette<br>annuelle</th></tr></thead><tbody>`;
   R.parD.forEach((d,i)=>{
     const av=d.av/d.eff, ap=d.ap/d.eff, na=d.netAp/d.eff, pe=d.net/d.eff;
     const bor=i===0?`< ${fr(ss[0])}`:i===9?`> ${fr(ss[8])}`:`${fr(ss[i-1])}–${fr(ss[i])}`;
@@ -1456,7 +1498,9 @@ function rendreIncidence(R,prel,T){
   html('tab-deciles', h+'</tbody>');
   const dP=R.pauvAp-R.pauvAv;
   html('mot-deciles', `Les montants sont des moyennes de décile pondérées par les effectifs,
-    non des bornes. La perte nette est celle du ménage après impôt, prélèvements sociaux et
+    non des bornes. Le revenu net est la pension après impôt et prélèvements sociaux,
+    <b>minimum vieillesse compris</b> : c'est pourquoi il dépasse la pension brute dans les
+    premiers déciles. La perte nette est celle du ménage après impôt, prélèvements sociaux et
     minimum vieillesse — toujours inférieure à la baisse brute.
     ${pIdx>0?`<br><br><b>La sous-indexation frappe tout le monde</b>, y compris les déciles
       qu’aucune autre mesure ne touche : ${pct(pIdx,1)} de pension en moins après
@@ -1624,7 +1668,7 @@ function rendreCible(){
 /* ==========================================================================
    COMPARER
    ========================================================================== */
-function nomScenario(){ return SCENARIOS.length?SCENARIOS.join(' + '):'Réglage manuel'; }
+function nomScenario(){ return SCENARIOS.length?SCENARIOS.join(' + '):'Votre scénario'; }
 function indicateurs(etat){
   const sv=etatCourant(); restaurer(etat);
   EFFET_PILOTAGE=chiffrer(E.variante).nette/COR.pib2025*100;
@@ -1726,7 +1770,12 @@ résidant en France, 1 705 € de pension moyenne.</p>
 46 tranches de 100 €. Sa moyenne implicite concorde à 3,6 % près avec l’EACR de la même année,
 l’écart correspondant à la majoration pour trois enfants.</p>
 <p>Masses par régime : 335 Md€ répartis entre une trentaine de caisses. Ce sont les masses et
-non les effectifs, car un polypensionné apparaît dans plusieurs caisses.</p></div>
+non les effectifs, car un polypensionné apparaît dans plusieurs caisses.</p>
+<p><b>Pourquoi 335 Md€ ici et 422 Md€ en tête de page ?</b> Les 335 Md€ sont les seules pensions
+de droit direct versées en 2024. Les 422 Md€ sont l’ensemble des dépenses de retraite en 2025
+selon le Conseil d’orientation des retraites (14,1 % du PIB), sur un champ plus large défini
+par le Conseil — pensions de réversion notamment — et pour une année plus récente. Les deux
+chiffres sont exacts ; ils ne mesurent pas la même chose.</p></div>
 
 <div class="bloc"><h3>Barèmes 2026</h3>
 <p>Impôt sur le revenu : 11 600 / 29 579 / 84 577 / 181 917 €, loi de finances pour 2026,
@@ -1752,14 +1801,20 @@ février 2025 : l’âge effectif a progressé de 2,1 ans mais la durée passée
 mais 12 à 15 points de chômage indemnisé. Dubois et Koubi, 2017 : environ 64 % vers l’emploi.
 Drees, 2016 : 1,2 à 1,5 Md€ de surcoût d’invalidité et 600 M€ de minima sociaux.</p></div>
 
-<h2>Deux paramètres à confirmer</h2>
+<h2>Paramètres vérifiés contre les textes</h2>
 <div class="bloc">
-<p><b>Le plafond de l’abattement de 10 %</b> est retenu par foyer fiscal. Trois sources sur
-quatre le confirment. L’interprétation inverse sous-estimerait la perte d’impôt sur les
-déciles hauts.</p>
-<p><b>Le seuil de CSG au taux médian à deux parts</b> a été arbitré à 40 604 €, contre 39 886 €
-selon d’autres sources. Le seuil retenu étant le plus haut, le retour de CSG est minoré et
-l’économie affichée majorée.</p></div>
+<p><b>Le plafond de l’abattement de 10 %</b> sur les pensions s’applique par foyer fiscal
+(4 439 €), non par pensionné : BOFiP (article 158-5-a du code général des impôts) et réponse
+ministérielle à la question écrite AN n° 21770.</p>
+<p><b>Les seuils de CSG</b> sont ceux de la grille officielle 2026 de l’Assurance retraite
+(mise à jour du 9 janvier 2026), dont 40 604 € de revenu fiscal de référence pour l’entrée au
+taux normal à deux parts. Décote, abattement sur les salaires et lissage des taux sont
+recoupés avec le BOFiP.</p>
+<p><b>L’âge légal et la durée d’assurance par génération</b> reproduisent mot pour mot les
+articles L. 161-17-2 et L. 161-17-3 du code de la sécurité sociale, dans leur rédaction issue
+de la loi de financement de la sécurité sociale pour 2026 (article 105).</p>
+<p><b>Restent fragiles</b> : les seuils de CSG outre-mer (source unique, les DROM ne sont pas
+simulés) et la moyenne des pensions au-delà de 4 500 €, que la Drees ne publie pas.</p></div>
 
 <h2>Une controverse que cet outil ne tranche pas</h2>
 <div class="bloc">
@@ -1799,8 +1854,13 @@ TVA. Effet de second tour non modélisé, qui va lui aussi vers une économie pl
 la source à chaque utilisation : « Source : Drees, enquête annuelle auprès des caisses de
 retraite (EACR), enrichie avec le modèle Ancetre ». Cette mention doit accompagner toute
 publication de résultats.</p>
+<p>Code et méthode sous licence MIT, consultables sur
+<a href="https://github.com/ManZanau/retraites-simulateur">GitHub</a>.</p>
+<p><b>Comment citer :</b> Aurain, S. (2026). <i>Où va l’argent des retraites — simulateur de
+dépense publique</i>. https://ou-va-largent-des-retraites.pages.dev — données à jour au
+${DATE_DONNEES}.</p>
 <p class="pied">Outil d’aide à la décision. Ne constitue ni un chiffrage officiel, ni un conseil,
-ni une estimation de droits individuels à retraite. Paramètres arrêtés en septembre 2026.</p></div>`;
+ni une estimation de droits individuels à retraite. Données à jour au ${DATE_DONNEES}.</p></div>`;
 
 /* ==========================================================================
    RAPPORT PARTAGEABLE
@@ -1971,6 +2031,9 @@ function construireRapport(){
     santé solidaire et exonérations locales ne sont pas modélisées et réduiraient l’économie.
     L’impôt est calculé par individu alors qu’il se liquide au foyer. Aucun changement de
     comportement n’est simulé.<br><br>
+    <b>Citer.</b> Aurain, S. (2026). Où va l’argent des retraites — simulateur de dépense
+    publique. https://ou-va-largent-des-retraites.pages.dev — données à jour au
+    ${DATE_DONNEES}.<br><br>
     Outil d’aide à la décision. Ne constitue ni un chiffrage officiel, ni un conseil.</div>`);
 }
 
@@ -2048,6 +2111,7 @@ brancher('rap-copier',()=>{ const b=$('rap-copier'), t=resumeTexte();
   else { afficherPourCopie(t); message(b,'Texte affiché ci-dessous',4000); }});
 
 /* démarrage */
+html('date-donnees', DATE_DONNEES);
 if(location.hash.length>3) decoderEtat(location.hash.slice(1));
 bâtir('lev-simple', LEV.simple);
 bâtir('lev-bornes', LEV.bornes);
@@ -2067,6 +2131,15 @@ if(window.addEventListener) window.addEventListener('hashchange', ()=>{
     SCENARIOS=[]; appliquerMode(); tout();
   }
 });
+
+/* Rotation d'écran ou redimensionnement : redessiner le graphique si l'on
+   change de gabarit (téléphone / écran large). */
+if(window.addEventListener){
+  let etroit=window.innerWidth<600;
+  window.addEventListener('resize', ()=>{
+    const e=window.innerWidth<600; if(e!==etroit){ etroit=e; tout(); }
+  });
+}
 
 /* APPLICATION INSTALLABLE (PWA). Hors ligne grâce à /sw.js, installable via
    /manifest.webmanifest — tous deux à la racine, donc actifs sur le site
