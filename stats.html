@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Page privée de suivi : non liée depuis l'application, exclue des moteurs. -->
+<meta name="robots" content="noindex, nofollow">
+<title>Statistiques — Où va l'argent des retraites</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<style>
+  :root{--encre:#12203A;--or:#E9C55A;--brume:#9DB0CD;--papier:#EDEFF3}
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--encre);color:#fff;min-height:100vh;display:flex;align-items:center;
+    justify-content:center;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  main{width:min(32rem,100% - 3rem)}
+  h1{font-size:1rem;font-weight:600;color:var(--brume);letter-spacing:.02em}
+  .chiffres{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.4rem 0}
+  .carte{background:rgba(255,255,255,.06);border-radius:4px;padding:1.2rem 1.1rem}
+  .n{font:600 2.4rem/1 "IBM Plex Mono",ui-monospace,monospace;color:var(--or)}
+  .lib{font-size:.85rem;color:var(--brume);margin-top:.5rem}
+  p{font-size:.8rem;color:var(--brume)}
+  a{color:var(--or)}
+</style>
+</head>
+<body>
+<main>
+  <h1>Où va l’argent des retraites — suivi</h1>
+  <div class="chiffres">
+    <div class="carte"><div class="n" id="connexions">…</div>
+      <div class="lib">connexions différentes<br>(une par navigateur)</div></div>
+    <div class="carte"><div class="n" id="rapports">…</div>
+      <div class="lib">rapports partagés<br>(boutons Partager ou Copier)</div></div>
+  </div>
+  <p>Chiffres approximatifs, mis à jour à chaque ouverture de cette page. Comptés depuis le
+    9 septembre 2026. <a href="/">Retour au simulateur</a></p>
+</main>
+<script>
+  const API = 'https://abacus.jasoncameron.dev/get/retraites-simulateur-manzanau/';
+  for (const [cle, id] of [['ouvertures', 'connexions'], ['rapports-partages', 'rapports']]) {
+    fetch(API + cle)
+      .then(r => r.ok ? r.json() : Promise.reject(r))
+      .then(d => { document.getElementById(id).textContent = (Number(d.value) || 0).toLocaleString('fr-FR'); })
+      .catch(() => { document.getElementById(id).textContent = '—'; });
+  }
+</script>
+</body>
+</html>
