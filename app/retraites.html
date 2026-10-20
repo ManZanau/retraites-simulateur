@@ -2049,6 +2049,15 @@ bâtir('lev-cible', LEV.cible, rendreCible);
 appliquerMode();
 tout();
 
+/* Lien de scénario collé dans un onglet où le simulateur est déjà ouvert :
+   seul le « # » change, la page ne se recharge pas. Sans cet écouteur, le
+   scénario reçu ne s'appliquait qu'au prochain rechargement. */
+if(window.addEventListener) window.addEventListener('hashchange', ()=>{
+  if(location.hash.length>3 && decoderEtat(location.hash.slice(1))){
+    SCENARIOS=[]; appliquerMode(); tout();
+  }
+});
+
 /* bouton de rapport, ajouté au bloc résultat après le premier rendu */
 (function(){
   const b=document.createElement('button');
