@@ -130,8 +130,8 @@ raison forte — c'est un choix de diffusion, pas un oubli d'architecture.
 
 - **Aucune dépendance de build.** Pas de npm, pas de webpack, pas de framework
   JS. Vanilla JS dans une balise `<script>`, CSS dans une balise `<style>`.
-- **Polices** : Google Fonts (Instrument Sans + IBM Plex Mono), avec pile de
-  repli système complète si hors ligne.
+- **Polices** : Google Fonts (Instrument Sans seule, chiffres à chasse fixe via
+  `tabular-nums`), avec pile de repli système complète si hors ligne.
 - **Python 3.10+** pour les moteurs (`modeles/`), testés avec `pandas`,
   `numpy`, `scipy`, `openpyxl`, `pyyaml` (voir `requirements.txt`).
 - **Node.js** requis uniquement pour `tests/test_app.py`, qui exécute le JS
