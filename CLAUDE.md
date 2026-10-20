@@ -19,6 +19,7 @@ Ne pas relire ces fichiers en entier sans besoin : chercher la section utile.
 - Vérifier un déploiement : connecteur MCP Cloudflare, `GET /accounts/{id}/pages/
   projects/ou-va-largent-des-retraites/deployments` (déclencheur `github:push`).
 - Dépôt : https://github.com/ManZanau/retraites-simulateur (public, MIT).
+- Police Instrument Sans servie depuis `/fonts/` (plus de Google Fonts).
 - L'app = **un seul fichier** `app/retraites.html` (~2 350 lignes, HTML+CSS+JS).
   Ne pas le lire en entier : `grep -n` puis lire la zone. Ne pas le découper.
 - `_redirects` : la racine `/` sert le simulateur (liens de scénario `/#...`).
@@ -41,14 +42,9 @@ Ne pas relire ces fichiers en entier sans besoin : chercher la section utile.
 - Les avertissements git « LF will be replaced by CRLF » sont sans effet.
 
 ## En cours (au 20/10/2026)
-1. **Branche `maquette-mise-en-page`** — nouvelle mise en page, en attente de
-   validation de Stan (aperçu :
-   https://maquette-mise-en-page.ou-va-largent-des-retraites.pages.dev).
-   Contenu : curseurs à gauche / résultat fixe à droite (≥ 1000 px), bandeau
-   résultat en bas sur téléphone, sélecteur Simple/Détaillé en pilule,
-   scénarios groupés, correction de l'alignement des curseurs du mode simple.
-   Si validé : `git checkout main && git merge maquette-mise-en-page && git push`,
-   vérifier le déploiement, puis supprimer la branche (locale et distante).
+1. Nouvelle mise en page + corrections d'accessibilité (contrastes, textes
+   ≥ 13 px, curseurs lisibles par lecteur d'écran, onglets au clavier, police
+   hébergée dans `fonts/`) : **publiées sur `main` le 20/10/2026**.
 2. **Reste de la revue d'ergonomie** (après la maquette), par priorité :
    - « Atteindre une cible » : bouton « Appliquer au simulateur » sur chaque dosage.
    - « Comparer » : comparer d'office au « sans réforme », bouton « Garder ce

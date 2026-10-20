@@ -24,10 +24,18 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="Retraites">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="/fonts/instrument-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+/* Police hébergée sur le site (licence OFL, fonts/OFL.txt) : aucune requête
+   vers Google, donc aucune adresse IP de visiteur transmise. Fichier variable,
+   un seul pour toutes les graisses. Sur l'adresse de secours GitHub Pages,
+   le chemin absolu ne résout pas : la pile système prend le relais. */
+@font-face{font-family:'Instrument Sans';font-style:normal;font-weight:400 700;font-display:swap;
+  src:url(/fonts/instrument-sans-latin.woff2) format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Instrument Sans';font-style:normal;font-weight:400 700;font-display:swap;
+  src:url(/fonts/instrument-sans-latin-ext.woff2) format('woff2');
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
 :root{
   --encre:#12203A; --encre-2:#25375C; --bleu:#2E4E86; --brume:#5A6B8C;
   --papier:#EDEFF3; --carte:#F7F8FA; --blanc:#FFF; --trait:#D2D8E2;
@@ -237,6 +245,7 @@ body:not(.simple) .simple-seul{display:none!important}
 
 .pilot-leviers .groupe:first-child{margin-top:0}
 .note.intro{margin-top:0}
+.simple-seul #mot-simple{margin-top:.7rem}
 
 @media (min-width:1000px){
   .pilot-grille{display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:2.4rem;align-items:start}
@@ -246,10 +255,11 @@ body:not(.simple) .simple-seul{display:none!important}
   .barre-res{display:none!important}
 }
 @media (max-width:999px){
-  .pilot-leviers{margin-top:1.4rem}
-  /* Sur téléphone, les curseurs avant le texte d'introduction. */
-  .simple-seul{display:flex;flex-direction:column}
-  .simple-seul .intro{order:2;margin-top:.7rem}
+  /* Sur téléphone, les curseurs d'abord : on agit avant de lire. Le résultat
+     suit, et le bandeau du bas le résume dès qu'un curseur a bougé. */
+  .pilot-grille{display:flex;flex-direction:column}
+  .pilot-leviers{order:1;margin-top:1.4rem}
+  .pilot-resultat{order:2;margin-top:1.2rem}
   main{padding-bottom:5.5rem}
 }
 @media (max-width:600px){
@@ -297,28 +307,31 @@ body:not(.simple) .simple-seul{display:none!important}
   </div>
 </header>
 
-<nav class="nav"><div class="wrap" role="tablist">
-  <button class="onglet" role="tab" aria-selected="true" data-o="pilot">Décider</button>
-  <button class="onglet avance" role="tab" aria-selected="false" data-o="inc">Qui paie</button>
-  <button class="onglet avance" role="tab" aria-selected="false" data-o="obj">Atteindre une cible</button>
-  <button class="onglet avance" role="tab" aria-selected="false" data-o="cmp">Comparer</button>
-  <button class="onglet" role="tab" aria-selected="false" data-o="meth">Méthode</button>
+<nav class="nav"><div class="wrap" role="tablist" aria-label="Sections du simulateur">
+  <button class="onglet" role="tab" aria-selected="true" data-o="pilot" id="t-pilot" aria-controls="pilot" tabindex="0">Décider</button>
+  <button class="onglet avance" role="tab" aria-selected="false" data-o="inc" id="t-inc" aria-controls="inc" tabindex="-1">Qui paie</button>
+  <button class="onglet avance" role="tab" aria-selected="false" data-o="obj" id="t-obj" aria-controls="obj" tabindex="-1">Atteindre une cible</button>
+  <button class="onglet avance" role="tab" aria-selected="false" data-o="cmp" id="t-cmp" aria-controls="cmp" tabindex="-1">Comparer</button>
+  <button class="onglet" role="tab" aria-selected="false" data-o="meth" id="t-meth" aria-controls="meth" tabindex="-1">Méthode</button>
 </div></nav>
 
 <main><div class="wrap">
 
-<section id="pilot">
+<section id="pilot" role="tabpanel" aria-labelledby="t-pilot">
  <div class="pilot-grille">
   <!-- Sur écran large, le résultat reste fixe à droite pendant qu'on règle
-       les curseurs à gauche ; sur téléphone il passe en tête de page. -->
+       les curseurs à gauche ; sur téléphone il passe sous les curseurs. -->
   <aside class="pilot-resultat" aria-label="Résultat">
     <div class="res" id="res"></div>
   </aside>
 
   <div class="pilot-leviers">
   <div class="simple-seul">
-    <div class="note intro" id="mot-simple"></div>
+    <p class="note intro"><b>À vous de jouer.</b> Déplacez un curseur : vous verrez aussitôt
+      ce que votre choix rapporte — ou coûte — aux finances publiques, dès la première année
+      puis jusqu’en 2070.</p>
     <div class="groupe" id="lev-simple"></div>
+    <div class="note" id="mot-simple"></div>
   </div>
 
   <div class="avance">
@@ -360,7 +373,7 @@ body:not(.simple) .simple-seul{display:none!important}
  </div>
 </section>
 
-<section id="inc" hidden>
+<section id="inc" role="tabpanel" aria-labelledby="t-inc" hidden>
   <h2>De l'économie affichée à l'économie réelle</h2>
   <table id="tab-cascade"></table>
   <div class="note" id="mot-cascade"></div>
@@ -377,7 +390,7 @@ body:not(.simple) .simple-seul{display:none!important}
   <div class="note" id="mot-imputation"></div>
 </section>
 
-<section id="obj" hidden>
+<section id="obj" role="tabpanel" aria-labelledby="t-obj" hidden>
   <h2>Fixer la cible, laisser l'outil doser</h2>
   <p class="sous">Plutôt que de chercher à tâtons la bonne combinaison, indiquez la somme à dégager et les leviers autorisés.</p>
   <div class="groupe" id="lev-cible"></div>
@@ -387,7 +400,7 @@ body:not(.simple) .simple-seul{display:none!important}
   <div class="note" id="mot-cible"></div>
 </section>
 
-<section id="cmp" hidden>
+<section id="cmp" role="tabpanel" aria-labelledby="t-cmp" hidden>
   <h2>Deux scénarios, les mêmes lignes</h2>
   <p class="sous">Réglez un scénario, enregistrez-le en A, réglez-en un autre, enregistrez-le en B.</p>
   <div class="puces">
@@ -401,7 +414,7 @@ body:not(.simple) .simple-seul{display:none!important}
   <div class="note" id="mot-comp"></div>
 </section>
 
-<section id="meth" hidden></section>
+<section id="meth" role="tabpanel" aria-labelledby="t-meth" hidden></section>
 
 </div></main>
 
@@ -1343,10 +1356,7 @@ function tableProjection(T,actif){
 
 function motSimple(R,net,lo,hi,T){
   if(Math.abs(net)<1e8 && PJ.age===0){
-    html('mot-simple', `<b>À vous de jouer.</b> Déplacez un curseur : vous verrez aussitôt ce que
-      votre choix rapporte — ou coûte — aux finances publiques, dès la première année puis
-      jusqu’en 2070.<br><br>
-      Trois choses valent d’être sues avant de commencer.<br><br>
+    html('mot-simple', `Trois choses valent d’être sues.<br><br>
       <b>Un euro retiré n’est pas un euro gagné.</b> Une pension est imposable et supporte la CSG :
       quand elle baisse, l’État perd aussi ce qu’elle lui rapportait. Sur les pensions élevées,
       près de la moitié de l’économie revient ainsi par l’impôt.<br><br>
@@ -2165,7 +2175,9 @@ function appliquerMode(){
 }
 function ouvrirOnglet(id){
   ONGLET=id;
-  document.querySelectorAll('.onglet').forEach(t=>t.setAttribute('aria-selected', t.dataset.o===id));
+  document.querySelectorAll('.onglet').forEach(t=>{
+    t.setAttribute('aria-selected', t.dataset.o===id);
+    t.tabIndex = t.dataset.o===id ? 0 : -1; });
   ['pilot','inc','obj','cmp','meth'].forEach(x=>{const e=$(x); if(e) e.hidden=(x!==id);});
   if(id==='meth' && !$('meth').dataset.prêt){ html('meth',METHODE); $('meth').dataset.prêt='1'; }
   tout();
@@ -2192,6 +2204,17 @@ brancher('m-simple',()=>{MODE_SIMPLE=true; appliquerMode(); tout();});
 brancher('m-expert',()=>{MODE_SIMPLE=false; appliquerMode(); tout();});
 document.querySelectorAll('.onglet').forEach(t=>t.addEventListener('click',()=>{
   ouvrirOnglet(t.dataset.o); window.scrollTo({top:0,behavior:'smooth'});}));
+/* Clavier, comme des onglets classiques : Tab entre dans la barre sur
+   l'onglet ouvert, les flèches (et Début / Fin) passent aux onglets visibles. */
+document.querySelectorAll('.onglet').forEach(t=>t.addEventListener('keydown',ev=>{
+  const vis=[...document.querySelectorAll('.onglet')].filter(x=>x.offsetParent!==null);
+  const i=vis.indexOf(t);
+  const j={ArrowRight:i+1, ArrowLeft:i-1, Home:0, End:vis.length-1}[ev.key];
+  if(j===undefined || i<0) return;
+  ev.preventDefault();
+  const c=vis[(j+vis.length)%vis.length];
+  ouvrirOnglet(c.dataset.o); c.focus();
+}));
 
 /* cumul */
 brancher('mode-remplacer',()=>{MODE_CUMUL=false; SCENARIOS=SCENARIOS.slice(-1);

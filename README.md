@@ -61,8 +61,8 @@ passer à tort.
 
 ```
 app/retraites.html      L'application — UN SEUL FICHIER, HTML+CSS+JS inline,
-                         126 Ko, zéro dépendance externe sauf Google Fonts
-                         (avec repli si indisponible). C'est le livrable
+                         126 Ko, zéro dépendance externe (police hébergée
+                         dans `fonts/`, avec repli système). Livrable
                          final envoyé aux utilisateurs.
 app/version-precedente.html   Version antérieure à la refonte du 3 sept 2026,
                          conservée par précaution. 9 onglets, plus lourde.
@@ -130,7 +130,7 @@ raison forte — c'est un choix de diffusion, pas un oubli d'architecture.
 
 - **Aucune dépendance de build.** Pas de npm, pas de webpack, pas de framework
   JS. Vanilla JS dans une balise `<script>`, CSS dans une balise `<style>`.
-- **Polices** : Google Fonts (Instrument Sans seule, chiffres à chasse fixe via
+- **Polices** : Instrument Sans hébergée dans `fonts/` (licence OFL, aucune requête vers Google ; chiffres à chasse fixe via
   `tabular-nums`), avec pile de repli système complète si hors ligne.
 - **Python 3.10+** pour les moteurs (`modeles/`), testés avec `pandas`,
   `numpy`, `scipy`, `openpyxl`, `pyyaml` (voir `requirements.txt`).
