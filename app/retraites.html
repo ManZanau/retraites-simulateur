@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Où va l'argent des retraites</title>
+<meta name="description" content="Simulateur de dépense publique : l'effet réel d'une réforme des retraites, après impôt, prélèvements sociaux et minimum vieillesse, jusqu'en 2070.">
+<meta name="theme-color" content="#12203A">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Retraites">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -29,6 +35,9 @@ body{background:var(--papier);color:var(--encre);
   line-height:1.1;max-width:20ch}
 .tete p{font-size:.94rem;line-height:1.5;color:#B9C6DC;margin-top:.55rem;max-width:54ch}
 .tete .compteur{font-size:.78rem;color:#7E8FAE;margin-top:.9rem;min-height:1.1em}
+.tete .installer{margin-top:.55rem;background:none;border:1px solid rgba(233,197,90,.55);
+  color:var(--or-clair);font:inherit;font-size:.8rem;padding:.4rem .8rem;border-radius:var(--r);cursor:pointer}
+.tete .installer:hover{background:rgba(233,197,90,.12)}
 .modes{display:flex;gap:1.4rem;margin-top:1.15rem;border-bottom:1px solid rgba(255,255,255,.14)}
 .modes button{background:none;border:0;cursor:pointer;padding:.7rem 0 .6rem;font:inherit;
   font-size:.85rem;font-weight:600;color:rgba(255,255,255,.5);border-bottom:2px solid transparent;
@@ -197,6 +206,7 @@ body:not(.simple) .simple-seul{display:none!important}
     </div>
     <p class="compteur" id="compteur-appareils" aria-live="polite"
        title="Connexions différentes : une par appareil, rouvrir depuis le même navigateur ne recompte pas. Rapports partagés : comptés à chaque partage ou copie du rapport."></p>
+    <button class="installer" id="btn-installer" hidden>Installer l’application</button>
   </div>
 </header>
 
@@ -2057,6 +2067,33 @@ if(window.addEventListener) window.addEventListener('hashchange', ()=>{
     SCENARIOS=[]; appliquerMode(); tout();
   }
 });
+
+/* APPLICATION INSTALLABLE (PWA). Hors ligne grâce à /sw.js, installable via
+   /manifest.webmanifest — tous deux à la racine, donc actifs sur le site
+   Cloudflare ; sur l'ancienne adresse GitHub ils sont absents et l'appli
+   reste un simple site, sans erreur visible.
+   Bouton « Installer » : invite native sur Chrome, Edge et Android ; sur
+   iPhone et iPad, où Safari n'offre pas d'invite, une consigne à la place.
+   Caché si l'appli est déjà installée ou si le navigateur ne propose rien. */
+(function(){
+  if(!window.addEventListener) return;
+  if('serviceWorker' in navigator && location.protocol==='https:')
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  const b=document.getElementById('btn-installer'); if(!b) return;
+  const installee=(window.matchMedia && matchMedia('(display-mode: standalone)').matches)
+    || navigator.standalone===true;
+  if(installee) return;
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent||'')
+    || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+  let invite=null;
+  window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); invite=e; b.hidden=false; });
+  window.addEventListener('appinstalled', ()=>{ invite=null; b.hidden=true; });
+  if(ios) b.hidden=false;
+  b.addEventListener('click', async ()=>{
+    if(invite){ invite.prompt(); await invite.userChoice; invite=null; b.hidden=true; }
+    else if(ios) message(b, 'Touchez Partager, puis « Sur l’écran d’accueil »', 6000);
+  });
+})();
 
 /* bouton de rapport, ajouté au bloc résultat après le premier rendu */
 (function(){

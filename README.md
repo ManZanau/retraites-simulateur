@@ -8,6 +8,28 @@ minimum vieillesse.
 **Pour reprendre ce projet sans relire tout l'historique de conversation :
 ce fichier + `docs/hypotheses.md` + `docs/inventaire_sources.md` suffisent.**
 
+**En ligne : https://ou-va-largent-des-retraites.pages.dev** — installable
+comme une application (bouton « Installer l'application » dans l'en-tête,
+ou « Sur l'écran d'accueil » sur iPhone), utilisable hors connexion.
+
+---
+
+## Hébergement
+
+- **Cloudflare Pages**, projet `ou-va-largent-des-retraites`, relié à ce dépôt :
+  chaque push sur `main` est en ligne en moins d'une minute. Aucune étape de
+  construction : le dépôt est servi tel quel.
+- `_redirects` fait servir le simulateur directement à la racine `/` (sans
+  `/app/retraites.html`), d'où des liens de scénario courts :
+  `https://ou-va-largent-des-retraites.pages.dev/#…`.
+- **Application installable (PWA)** : `manifest.webmanifest`, `sw.js` et
+  `icons/` à la racine. `sw.js` sert la page en réseau d'abord (jamais de
+  version périmée en ligne) et la copie locale hors ligne.
+- L'ancienne adresse GitHub Pages (`manzanau.github.io/retraites-simulateur`)
+  reste active comme secours, sans les fonctions d'application installable.
+- Domaine personnalisé possible plus tard (onglet *Custom domains* du projet
+  Cloudflare), sans rien changer d'autre.
+
 ---
 
 ## Démarrage en 30 secondes
@@ -289,9 +311,8 @@ fonctionnalités.
    - Reste en suspens : seuils CSG **outre-mer** (grille 2026 ajoutée mais
      source secondaire unique, à recouper) ; version archivée de B0 non
      recontrôlée ligne à ligne (contrefactuel).
-2. **Héberger** (Cloudflare Pages recommandé — gratuit, pas de plafond de
-   bande passante). Sans hébergement, le lien de partage de scénario ne
-   fonctionne pas pour un tiers (pointe vers `file://`).
+2. ~~**Héberger**~~ — **fait (octobre 2026)** : Cloudflare Pages, voir
+   § Hébergement. Reste éventuellement : un nom de domaine propre.
 3. **Écrire à la Drees** (drees-infos@sante.gouv.fr) pour obtenir la moyenne
    de la tranche EIR > 4 500 € — lèverait le plus gros facteur d'incertitude
    de l'outil.
@@ -335,8 +356,9 @@ Ouverte 2.0** et imposent, sur toute sortie publiée :
 
 **Comment citer ce travail :**
 
-    Aurain, S. (2026). Simulateur de dépense publique — volet retraites.
-    https://github.com/ManZanau/retraites-simulateur
+    Aurain, S. (2026). Où va l'argent des retraites — simulateur de dépense
+    publique. https://ou-va-largent-des-retraites.pages.dev
+    (code source : https://github.com/ManZanau/retraites-simulateur)
 
 Voir aussi `CITATION.cff` (GitHub affiche un bouton « Cite this repository »).
 

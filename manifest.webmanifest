@@ -1,0 +1,18 @@
+{
+  "id": "/",
+  "name": "Où va l'argent des retraites",
+  "short_name": "Retraites",
+  "description": "Simulateur de dépense publique : l'effet réel d'une réforme des retraites, après impôt, prélèvements sociaux et minimum vieillesse, jusqu'en 2070.",
+  "lang": "fr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#EDEFF3",
+  "theme_color": "#12203A",
+  "categories": ["finance", "education", "government"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -8,6 +8,7 @@ authors:
   - family-names: Aurain
     given-names: Stanislas
 repository-code: "https://github.com/ManZanau/retraites-simulateur"
+url: "https://ou-va-largent-des-retraites.pages.dev"
 abstract: >-
   Outil de pilotage des retraites françaises : quantifie l'effet net d'une
   mesure sur les finances publiques (effet immédiat et trajectoire jusqu'en
